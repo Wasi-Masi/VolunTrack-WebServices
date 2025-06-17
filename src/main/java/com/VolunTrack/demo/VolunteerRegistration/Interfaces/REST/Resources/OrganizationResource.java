@@ -7,10 +7,8 @@ package com.VolunTrack.demo.VolunteerRegistration.Interfaces.REST.Resources;
 public record OrganizationResource(
         Long id,
         String name,
-        String ruc,
+        String description,
         String email,
-        String phoneNumber,
-        String address
-
+        String plan
 ) {
 }

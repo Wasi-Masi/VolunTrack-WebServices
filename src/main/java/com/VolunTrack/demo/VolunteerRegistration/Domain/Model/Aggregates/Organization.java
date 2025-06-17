@@ -1,10 +1,16 @@
 package com.VolunTrack.demo.VolunteerRegistration.Domain.Model.Aggregates;
 
-import jakarta.persistence.*;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
 import lombok.Getter;
-import lombok.Setter;
 import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
+import lombok.Setter;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -14,11 +20,10 @@ import java.util.Set;
  * An organization is a root entity that can manage volunteers.
  */
 @Entity
-@Table(name = "organizations") // Specifies the table name in the database
+@Table(name = "organizations")
 @Getter
 @Setter
-@NoArgsConstructor // Generates a no-argument constructor (required by JPA)
-@AllArgsConstructor // Generates a constructor with all arguments
+@NoArgsConstructor
 public class Organization {
 
     /**
@@ -90,7 +95,7 @@ public class Organization {
      */
     public void addOrgVolunteer(OrgVolunteer orgVolunteer) {
         this.orgVolunteers.add(orgVolunteer);
-        orgVolunteer.setOrganization(this); // Ensures bidirectional consistency
+        orgVolunteer.setOrganization(this);
     }
 
     /**
@@ -102,6 +107,6 @@ public class Organization {
      */
     public void removeOrgVolunteer(OrgVolunteer orgVolunteer) {
         this.orgVolunteers.remove(orgVolunteer);
-        orgVolunteer.setOrganization(null); // Desvincula la relación
+        orgVolunteer.setOrganization(null);
     }
 }

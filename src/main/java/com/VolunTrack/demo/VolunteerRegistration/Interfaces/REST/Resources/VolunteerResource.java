@@ -1,6 +1,6 @@
 package com.VolunTrack.demo.VolunteerRegistration.Interfaces.REST.Resources;
 
-import java.time.LocalDate;
+import java.time.LocalDate; // Para dateOfBirth y registrationDate
 
 /**
  * Represents the resource for a Volunteer.
@@ -14,6 +14,9 @@ public record VolunteerResource(
         LocalDate dateOfBirth,
         String email,
         String phoneNumber,
-        String address
+        LocalDate registrationDate,
+        String status,
+        String address,
+        String profession
 ) {
 }
