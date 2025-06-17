@@ -1,4 +1,16 @@
 package com.VolunTrack.demo.VolunteerRegistration.Interfaces.REST.Resources;
 
-public class OrganizationResource {
+/**
+ * Represents the resource for an Organization.
+ * This DTO is used to represent Organization data when returned via the REST API.
+ */
+public record OrganizationResource(
+        Long id,
+        String name,
+        String ruc,
+        String email,
+        String phoneNumber,
+        String address
+
+) {
 }

@@ -1,4 +1,19 @@
 package com.VolunTrack.demo.VolunteerRegistration.Interfaces.REST.Resources;
 
-public class VolunteerResource {
+import java.time.LocalDate;
+
+/**
+ * Represents the resource for a Volunteer.
+ * This DTO is used to represent Volunteer data when returned via the REST API.
+ */
+public record VolunteerResource(
+        Long id,
+        String firstName,
+        String lastName,
+        String dni,
+        LocalDate dateOfBirth,
+        String email,
+        String phoneNumber,
+        String address
+) {
 }
