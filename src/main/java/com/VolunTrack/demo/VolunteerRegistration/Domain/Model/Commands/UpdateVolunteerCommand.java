@@ -1,5 +1,6 @@
 package com.VolunTrack.demo.VolunteerRegistration.Domain.Model.Commands;
 
+import com.VolunTrack.demo.VolunteerRegistration.Domain.Model.Aggregates.VolunteerStatus; // <-- Importar VolunteerStatus
 import java.time.LocalDate;
 import java.util.Optional;
 
@@ -16,7 +17,9 @@ public record UpdateVolunteerCommand(
         Optional<LocalDate> dateOfBirth,
         Optional<String> email,
         Optional<String> phoneNumber,
-        Optional<String> address
+        Optional<String> address,
+        Optional<String> profession, // <-- NUEVO CAMPO: Profesión (opcional)
+        Optional<VolunteerStatus> status // <-- NUEVO CAMPO: Estado (opcional)
 ) {
 
     public UpdateVolunteerCommand {

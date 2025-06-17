@@ -25,7 +25,9 @@ public class CreateVolunteerCommandFromResourceAssembler {
                 resource.dateOfBirth(),
                 resource.email(),
                 resource.phoneNumber(),
-                resource.address()
+                resource.address(),
+                resource.organizationId(),
+                resource.profession()
         );
     }
 }

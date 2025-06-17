@@ -1,8 +1,7 @@
 package com.VolunTrack.demo.VolunteerRegistration.Interfaces.REST.Resources;
 
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.PastOrPresent;
-import jakarta.validation.constraints.Pattern;
+import com.VolunTrack.demo.VolunteerRegistration.Domain.Model.Aggregates.VolunteerStatus;
+
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDate;
@@ -16,14 +15,13 @@ import java.util.Optional;
 public record UpdateVolunteerResource(
         Optional<String> firstName,
         Optional<String> lastName,
-        @Pattern(regexp = "^[0-9]{8}$", message = "DNI must be 8 digits")
         Optional<String> dni,
-        @PastOrPresent(message = "Date of birth cannot be in the future")
         @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
         Optional<LocalDate> dateOfBirth,
-        @Email(message = "Email must be valid")
         Optional<String> email,
         Optional<String> phoneNumber,
-        Optional<String> address
+        Optional<String> address,
+        Optional<String> profession,
+        Optional<VolunteerStatus> status
 ) {
 }

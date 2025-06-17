@@ -43,7 +43,9 @@ public class VolunteerCommandService {
                 command.dateOfBirth(),
                 command.email(),
                 command.phoneNumber(),
-                command.address()
+                command.address(),
+                command.organizationId(),
+                command.profession()
         );
     }
 
@@ -62,7 +64,9 @@ public class VolunteerCommandService {
                 command.dateOfBirth().orElse(null),
                 command.email().orElse(null),
                 command.phoneNumber().orElse(null),
-                command.address().orElse(null)
+                command.address().orElse(null),
+                command.profession().orElse(null),
+                command.status().orElse(null)
         );
     }
 

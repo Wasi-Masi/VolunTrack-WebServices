@@ -108,24 +108,6 @@ public class VolunteerController {
         return new ResponseEntity<>(volunteerResources, HttpStatus.OK);
     }
 
-    /**
-     * Retrieves a volunteer by their ID.
-     * GET /api/v1/volunteers/{volunteerId}
-     *
-     * @param volunteerId The ID of the volunteer to retrieve.
-     * @return A ResponseEntity containing the VolunteerResource if found, or a 404 Not Found status.
-     */
-    @Operation(summary = "Get a volunteer by ID", description = "Retrieves a volunteer's details by their unique identifier.")
-    @GetMapping("/{volunteerId}")
-    public ResponseEntity<VolunteerResource> getVolunteerById(@PathVariable Long volunteerId) {
-        return volunteerQueryService.handle(new GetAllVolunteersQuery()).stream()
-                .filter(v -> v.getId().equals(volunteerId))
-                .findFirst()
-                .map(volunteerResourceFromEntityAssembler::toResourceFromEntity)
-                .map(resource -> new ResponseEntity<>(resource, HttpStatus.OK))
-                .orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND));
-
-    }
 
 
     /**

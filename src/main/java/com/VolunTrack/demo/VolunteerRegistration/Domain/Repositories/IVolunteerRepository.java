@@ -1,20 +1,20 @@
 package com.VolunTrack.demo.VolunteerRegistration.Domain.Repositories;
 
-import com.VolunTrack.demo.Shared.Infrastructure.Persistence.JPA.Repositories.BaseRepository;
 import com.VolunTrack.demo.VolunteerRegistration.Domain.Model.Aggregates.Volunteer;
-import org.springframework.stereotype.Repository;
+import org.springframework.data.jpa.repository.JpaRepository; // <-- IMPORTANT: We now extend JpaRepository
 
 import java.util.Optional;
 
 /**
  * Repository interface for managing {@link Volunteer} entities.
- * Extends {@link BaseRepository} to inherit common CRUD operations.
- * This interface can also define custom queries specific to Volunteer operations.
+ * Extends {@link JpaRepository} to inherit common CRUD operations provided by Spring Data JPA.
+ * This interface also defines custom queries specific to Volunteer operations.
  */
-@Repository
-public interface IVolunteerRepository extends BaseRepository<Volunteer, Long> {
+
+public interface IVolunteerRepository extends JpaRepository<Volunteer, Long> {
     /**
      * Finds a volunteer by their DNI (National Identity Document).
+     * Spring Data JPA will automatically generate the implementation for this method.
      *
      * @param dni The DNI of the volunteer.
      * @return An Optional containing the Volunteer if found, or empty otherwise.
@@ -23,6 +23,7 @@ public interface IVolunteerRepository extends BaseRepository<Volunteer, Long> {
 
     /**
      * Checks if a volunteer with the given DNI exists.
+     * Spring Data JPA will automatically generate the implementation for this method.
      *
      * @param dni The DNI to check.
      * @return True if a volunteer with the DNI exists, false otherwise.
@@ -31,6 +32,7 @@ public interface IVolunteerRepository extends BaseRepository<Volunteer, Long> {
 
     /**
      * Finds a volunteer by their email address.
+     * Spring Data JPA will automatically generate the implementation for this method.
      *
      * @param email The email address of the volunteer.
      * @return An Optional containing the Volunteer if found, or empty otherwise.
@@ -39,6 +41,7 @@ public interface IVolunteerRepository extends BaseRepository<Volunteer, Long> {
 
     /**
      * Checks if a volunteer with the given email address exists.
+     * Spring Data JPA will automatically generate the implementation for this method.
      *
      * @param email The email address to check.
      * @return True if a volunteer with the email exists, false otherwise.

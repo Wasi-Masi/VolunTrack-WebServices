@@ -37,6 +37,11 @@ public record CreateVolunteerResource(
         String phoneNumber,
 
         @NotBlank(message = "Address is required")
-        String address
+        String address,
+
+        @NotNull(message = "Organization ID is required")
+        Long organizationId,
+
+        String profession
 ) {
 }

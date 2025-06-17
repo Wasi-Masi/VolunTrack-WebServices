@@ -14,7 +14,9 @@ public record CreateVolunteerCommand(
         LocalDate dateOfBirth,
         String email,
         String phoneNumber,
-        String address
+        String address,
+        Long organizationId,
+        String profession
 ) {
 
 }

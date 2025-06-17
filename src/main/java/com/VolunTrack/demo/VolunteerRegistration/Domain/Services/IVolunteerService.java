@@ -3,6 +3,7 @@ package com.VolunTrack.demo.VolunteerRegistration.Domain.Services;
 import com.VolunTrack.demo.VolunteerRegistration.Domain.Model.Aggregates.Volunteer;
 import com.VolunTrack.demo.VolunteerRegistration.Domain.Model.Aggregates.Organization;
 import com.VolunTrack.demo.VolunteerRegistration.Domain.Model.Aggregates.OrgVolunteer;
+import com.VolunTrack.demo.VolunteerRegistration.Domain.Model.Aggregates.VolunteerStatus;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -16,7 +17,7 @@ import java.util.Optional;
 public interface IVolunteerService {
 
     /**
-     * Creates a new volunteer.
+     * Creates a new volunteer and associates them with a specified organization.
      *
      * @param firstName The first name of the volunteer.
      * @param lastName The last name of the volunteer.
@@ -25,9 +26,11 @@ public interface IVolunteerService {
      * @param email The email address of the volunteer.
      * @param phoneNumber The phone number of the volunteer.
      * @param address The address of the volunteer.
-     * @return An Optional containing the created Volunteer if successful, or empty if validation fails (e.g., DNI/email already exists).
+     * @param organizationId The ID of the organization to associate the volunteer with.
+     * @param profession The profession of the volunteer (can be null).
+     * @return An Optional containing the created Volunteer if successful, or empty if validation fails (e.g., DNI/email already exists, or organization not found).
      */
-    Optional<Volunteer> createVolunteer(String firstName, String lastName, String dni, LocalDate dateOfBirth, String email, String phoneNumber, String address);
+    Optional<Volunteer> createVolunteer(String firstName, String lastName, String dni, LocalDate dateOfBirth, String email, String phoneNumber, String address, Long organizationId, String profession);
 
     /**
      * Updates an existing volunteer's information.
@@ -40,15 +43,17 @@ public interface IVolunteerService {
      * @param email The new email address (can be null if not updated).
      * @param phoneNumber The new phone number (can be null if not updated).
      * @param address The new address (can be null if not updated).
+     * @param profession The new profession (can be null if not updated).
+     * @param status The new status (can be null if not updated).
      * @return An Optional containing the updated Volunteer if found and updated, or empty if not found or validation fails.
      */
-    Optional<Volunteer> updateVolunteer(Long volunteerId, String firstName, String lastName, String dni, LocalDate dateOfBirth, String email, String phoneNumber, String address);
+    Optional<Volunteer> updateVolunteer(Long volunteerId, String firstName, String lastName, String dni, LocalDate dateOfBirth, String email, String phoneNumber, String address, String profession, VolunteerStatus status);
 
     /**
      * Deletes a volunteer by their ID.
      *
      * @param volunteerId The ID of the volunteer to delete.
-     * @return True if the volunteer was successfully deleted, false otherwise (e.g., not found).
+     * @return True if the volunteer was successfully deleted, false otherwise.
      */
     boolean deleteVolunteer(Long volunteerId);
 

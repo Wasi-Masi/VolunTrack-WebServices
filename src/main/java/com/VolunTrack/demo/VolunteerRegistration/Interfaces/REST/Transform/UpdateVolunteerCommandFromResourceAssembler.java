@@ -28,7 +28,9 @@ public class UpdateVolunteerCommandFromResourceAssembler {
                 resource.dateOfBirth(),
                 resource.email(),
                 resource.phoneNumber(),
-                resource.address()
+                resource.address(),
+                resource.profession(),
+                resource.status()
         );
     }
 }
