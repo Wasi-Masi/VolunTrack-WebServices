@@ -1,7 +1,8 @@
+// src/main/java/com/VolunTrack/demo/VolunteerRegistration/Domain/Repositories/IVolunteerRepository.java
 package com.VolunTrack.demo.VolunteerRegistration.Domain.Repositories;
 
 import com.VolunTrack.demo.VolunteerRegistration.Domain.Model.Aggregates.Volunteer;
-import org.springframework.data.jpa.repository.JpaRepository; // <-- IMPORTANT: We now extend JpaRepository
+import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;
 
@@ -10,7 +11,6 @@ import java.util.Optional;
  * Extends {@link JpaRepository} to inherit common CRUD operations provided by Spring Data JPA.
  * This interface also defines custom queries specific to Volunteer operations.
  */
-
 public interface IVolunteerRepository extends JpaRepository<Volunteer, Long> {
     /**
      * Finds a volunteer by their DNI (National Identity Document).
