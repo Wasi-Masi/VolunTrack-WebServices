@@ -23,12 +23,13 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
  */
 @SpringBootApplication
 @EnableJpaAuditing
-
-@EnableJpaRepositories(basePackages = {"com.VolunTrack.demo.VolunteerRegistration.Domain.Repositories"})
+@EnableJpaRepositories(basePackages = {
+        "com.VolunTrack.demo.VolunteerRegistration.Domain.Repositories",
+        "com.VolunTrack.demo.ActivityRegistration.Domain.Repositories"
+})
 public class VolunTrackDemoApplication {
 
     public static void main(String[] args) {
         SpringApplication.run(VolunTrackDemoApplication.class, args);
     }
-
 }
