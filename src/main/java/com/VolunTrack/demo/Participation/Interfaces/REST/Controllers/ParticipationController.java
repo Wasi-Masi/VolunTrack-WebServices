@@ -9,6 +9,7 @@ import com.VolunTrack.demo.Participation.Interfaces.REST.Resources.CreatePartici
 import com.VolunTrack.demo.Participation.Interfaces.REST.Resources.ParticipationResource;
 import com.VolunTrack.demo.Participation.Interfaces.REST.Transform.CreateParticipationCommandFromResourceAssembler;
 import com.VolunTrack.demo.Participation.Interfaces.REST.Transform.ParticipationResourceFromEntityAssembler;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -39,6 +40,7 @@ public class ParticipationController {
      * Endpoint to create a new participation record.
      * POST /api/v1/participations
      */
+    @Operation(summary = "Create a participation", description = "Creates a new participation in the system.")
     @PostMapping
     public ResponseEntity<ParticipationResource> createParticipation(@RequestBody @Valid CreateParticipationResource resource) {
         Optional<Participation> participation = participationCommandService.handle(
@@ -52,6 +54,7 @@ public class ParticipationController {
      * Endpoint to get participation records by volunteer ID.
      * GET /api/v1/participations/by-volunteer/{volunteerId}
      */
+    @Operation(summary = "Get participation by volunteer ID", description = "Retrieves a participation's details by volunteer ID.")
     @GetMapping("by-volunteer/{volunteerId}")
     public ResponseEntity<List<ParticipationResource>> getParticipationsByVolunteerId(@PathVariable Long volunteerId) {
         List<Participation> participations = participationQueryService.handle(new GetParticipationByUserIdQuery(volunteerId));
@@ -66,6 +69,7 @@ public class ParticipationController {
      * Endpoint to get participation records by activity ID.
      * GET /api/v1/participations/by-activity/{activityId}
      */
+    @Operation(summary = "Get participations by Activity ID", description = "Retrieves an organization's details by its unique identifier.")
     @GetMapping("by-activity/{activityId}")
     public ResponseEntity<List<ParticipationResource>> getParticipationsByActivityId(@PathVariable Long activityId) {
         List<Participation> participations = participationQueryService.handle(new GetParticipationByActivityIdQuery(activityId));

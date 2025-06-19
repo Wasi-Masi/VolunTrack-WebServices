@@ -8,6 +8,7 @@ import com.VolunTrack.demo.Participation.Interfaces.REST.Resources.CertificateRe
 import com.VolunTrack.demo.Participation.Interfaces.REST.Resources.CreateCertificateResource;
 import com.VolunTrack.demo.Participation.Interfaces.REST.Transform.CertificateResourceFromEntityAssembler;
 import com.VolunTrack.demo.Participation.Interfaces.REST.Transform.CreateCertificateCommandFromResourceAssembler;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -38,6 +39,7 @@ public class CertificateController {
      * Endpoint to issue a new certificate for an existing participation.
      * POST /api/v1/certificates
      */
+    @Operation(summary = "Create a certificate", description = "Creates a new certificate in the system.")
     @PostMapping
     public ResponseEntity<CertificateResource> createCertificate(@RequestBody @Valid CreateCertificateResource resource) {
         Optional<Certificate> certificate = certificateCommandService.handle(
@@ -51,6 +53,7 @@ public class CertificateController {
      * Endpoint to get certificates by volunteer ID.
      * GET /api/v1/certificates/by-volunteer/{volunteerId}
      */
+    @Operation(summary = "Get certificate by volunteer ID", description = "Retrieves a certification's details by volunteer ID.")
     @GetMapping("by-volunteer/{volunteerId}")
     public ResponseEntity<List<CertificateResource>> getCertificatesByVolunteerId(@PathVariable Long volunteerId) {
         List<Certificate> certificates = certificateQueryService.handle(new GetCertificatesByUserIdQuery(volunteerId));

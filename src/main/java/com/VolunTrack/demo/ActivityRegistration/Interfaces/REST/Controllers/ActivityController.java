@@ -10,6 +10,7 @@ import com.VolunTrack.demo.ActivityRegistration.Interfaces.REST.Resources.Update
 import com.VolunTrack.demo.ActivityRegistration.Interfaces.REST.Transform.CreateActivityCommandFromResourceAssembler;
 import com.VolunTrack.demo.ActivityRegistration.Interfaces.REST.Transform.ActivityResourceFromEntityAssembler;
 import com.VolunTrack.demo.ActivityRegistration.Interfaces.REST.Transform.UpdateActivityCommandFromResourceAssembler;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -32,6 +33,7 @@ public class ActivityController {
         this.activityQueryService = activityQueryService;
     }
 
+    @Operation(summary = "Create an activity", description = "Creates a new activity in the system.")
     @PostMapping
     public ResponseEntity<ActivityResource> createActivity(@RequestBody CreateActivityResource resource) {
         var command = CreateActivityCommandFromResourceAssembler.toCommandFromResource(resource);
@@ -40,7 +42,7 @@ public class ActivityController {
                 new ResponseEntity<>(ActivityResourceFromEntityAssembler.toResourceFromEntity(value), HttpStatus.CREATED)
         ).orElseGet(() -> ResponseEntity.badRequest().build());
     }
-
+    @Operation(summary = "Get all activities", description = "Retrieves a list of all registered activities.")
     @GetMapping
     public ResponseEntity<List<ActivityResource>> getAllActivities() {
         var getAllActivitiesQuery = new GetAllActivitiesQuery();
@@ -51,6 +53,7 @@ public class ActivityController {
         return ResponseEntity.ok(activityResources);
     }
 
+    @Operation(summary = "Get activity by ID", description = "Retrieves an activity's details by its unique identifier.")
     @GetMapping("/{activityId}")
     public ResponseEntity<ActivityResource> getActivityById(@PathVariable Long activityId) {
         var getActivityByIdQuery = new GetActivityByIdQuery(activityId);
@@ -60,6 +63,7 @@ public class ActivityController {
         ).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
+    @Operation(summary = "Update an activity", description = "Updates the details of an existing activity.")
     @PutMapping("/{activityId}")
     public ResponseEntity<ActivityResource> updateActivity(@PathVariable Long activityId, @RequestBody UpdateActivityResource resource) {
         var command = UpdateActivityCommandFromResourceAssembler.toCommandFromResource(activityId, resource);
@@ -69,6 +73,7 @@ public class ActivityController {
         ).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
+    @Operation(summary = "Delete an activity", description = "Deletes an activity from the system by its unique identifier.")
     @DeleteMapping("/{activityId}")
     public ResponseEntity<?> deleteActivity(@PathVariable Long activityId) {
         try {

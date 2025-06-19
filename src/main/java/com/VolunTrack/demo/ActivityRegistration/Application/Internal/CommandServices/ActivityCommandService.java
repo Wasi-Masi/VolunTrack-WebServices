@@ -5,26 +5,32 @@ import com.VolunTrack.demo.ActivityRegistration.Domain.Model.Commands.CreateActi
 import com.VolunTrack.demo.ActivityRegistration.Domain.Model.Commands.DeleteActivityCommand;
 import com.VolunTrack.demo.ActivityRegistration.Domain.Model.Commands.UpdateActivityCommand;
 import com.VolunTrack.demo.ActivityRegistration.Domain.Repositories.IActivityRepository;
-import com.VolunTrack.demo.ActivityRegistration.Domain.Services.IActivityService; // Changed import
-import com.VolunTrack.demo.ActivityRegistration.Domain.Model.Queries.GetAllActivitiesQuery; // Added for IActivityService
-import com.VolunTrack.demo.ActivityRegistration.Domain.Model.Queries.GetActivityByIdQuery; // Added for IActivityService
+import com.VolunTrack.demo.ActivityRegistration.Domain.Services.IActivityService;
+import com.VolunTrack.demo.ActivityRegistration.Domain.Model.Queries.GetAllActivitiesQuery;
+import com.VolunTrack.demo.ActivityRegistration.Domain.Model.Queries.GetActivityByIdQuery;
+import com.VolunTrack.demo.Notifications.Domain.Services.INotificationCommandService;
+import com.VolunTrack.demo.Notifications.Domain.Model.Commands.CreateNotificationCommand;
+import com.VolunTrack.demo.Notifications.Domain.Model.Enums.NotificationType;
+import com.VolunTrack.demo.Notifications.Domain.Model.Enums.RecipientType;
 import org.springframework.stereotype.Service;
 
-import java.util.List; // Added for IActivityService
+import java.util.List;
 import java.util.Optional;
 
 @Service
-public class ActivityCommandService implements IActivityService { // Implements IActivityService
+public class ActivityCommandService implements IActivityService {
 
     private final IActivityRepository activityRepository;
+    private final INotificationCommandService notificationCommandService;
 
-    public ActivityCommandService(IActivityRepository activityRepository) {
+    public ActivityCommandService(IActivityRepository activityRepository,
+                                  INotificationCommandService notificationCommandService) {
         this.activityRepository = activityRepository;
+        this.notificationCommandService = notificationCommandService;
     }
 
     @Override
     public Optional<Activity> handle(CreateActivityCommand command) {
-        // You might add business rules here before saving
         if (activityRepository.findByTitulo(command.titulo()).isPresent()) {
             throw new IllegalArgumentException("Activity with title " + command.titulo() + " already exists.");
         }
@@ -41,7 +47,21 @@ public class ActivityCommandService implements IActivityService { // Implements 
                 command.estado(),
                 command.organizacionId()
         );
-        return Optional.of(activityRepository.save(activity));
+        Activity savedActivity = activityRepository.save(activity);
+
+
+        try {
+            CreateNotificationCommand notificationCommand = new CreateNotificationCommand(
+                    NotificationType.NEW_ACTIVITY,
+                    (long) savedActivity.getOrganizacion_id(),
+                    RecipientType.ORGANIZATION
+            );
+            notificationCommandService.handle(notificationCommand);
+        } catch (Exception e) {
+            System.err.println("Error creating new-activity notification for organization " + savedActivity.getOrganizacion_id() + ": " + e.getMessage());
+        }
+
+        return Optional.of(savedActivity);
     }
 
     @Override
@@ -70,8 +90,6 @@ public class ActivityCommandService implements IActivityService { // Implements 
         activityRepository.deleteById(command.actividadId());
     }
 
-    // Methods from IActivityService now handled directly in QueryService or here if appropriate
-    // For a clear separation, these query methods will be implemented in ActivityQueryService
     @Override
     public List<Activity> handle(GetAllActivitiesQuery query) {
         throw new UnsupportedOperationException("Query operations should be handled by ActivityQueryService");

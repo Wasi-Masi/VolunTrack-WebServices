@@ -12,6 +12,10 @@ import com.VolunTrack.demo.ActivityRegistration.Domain.Repositories.IActivityRep
 import com.VolunTrack.demo.ActivityRegistration.Domain.Repositories.IInscriptionRepository;
 import com.VolunTrack.demo.ActivityRegistration.Domain.Services.IInscriptionService;
 import com.VolunTrack.demo.VolunteerRegistration.Domain.Repositories.IVolunteerRepository;
+import com.VolunTrack.demo.Notifications.Domain.Services.INotificationCommandService;
+import com.VolunTrack.demo.Notifications.Domain.Model.Commands.CreateNotificationCommand;
+import com.VolunTrack.demo.Notifications.Domain.Model.Enums.NotificationType;
+import com.VolunTrack.demo.Notifications.Domain.Model.Enums.RecipientType;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,13 +28,16 @@ public class InscriptionCommandService implements IInscriptionService {
     private final IInscriptionRepository inscriptionRepository;
     private final IVolunteerRepository volunteerRepository;
     private final IActivityRepository activityRepository;
+    private final INotificationCommandService notificationCommandService;
 
     public InscriptionCommandService(IInscriptionRepository inscriptionRepository,
                                      IVolunteerRepository volunteerRepository,
-                                     IActivityRepository activityRepository) {
+                                     IActivityRepository activityRepository,
+                                     INotificationCommandService notificationCommandService) {
         this.inscriptionRepository = inscriptionRepository;
         this.volunteerRepository = volunteerRepository;
         this.activityRepository = activityRepository;
+        this.notificationCommandService = notificationCommandService;
     }
 
     @Override
@@ -61,7 +68,33 @@ public class InscriptionCommandService implements IInscriptionService {
 
         activityRepository.save(activity);
 
-        return Optional.of(inscriptionRepository.save(inscription));
+        Inscription savedInscription = inscriptionRepository.save(inscription);
+
+
+        try {
+            CreateNotificationCommand volunteerNotification = new CreateNotificationCommand(
+                    NotificationType.JOINED_ACTIVITY,
+                    savedInscription.getVoluntarioId(),
+                    RecipientType.VOLUNTEER
+            );
+            notificationCommandService.handle(volunteerNotification);
+        } catch (Exception e) {
+            System.err.println("Error creating joined-activity notification for volunteer " + savedInscription.getVoluntarioId() + ": " + e.getMessage());
+        }
+
+
+        try {
+            CreateNotificationCommand organizationNotification = new CreateNotificationCommand(
+                    NotificationType.VOLUNTEER_JOINED,
+                    (long) activity.getOrganizacion_id(),
+                    RecipientType.ORGANIZATION
+            );
+            notificationCommandService.handle(organizationNotification);
+        } catch (Exception e) {
+            System.err.println("Error creating volunteer-joined notification for organization " + activity.getOrganizacion_id() + ": " + e.getMessage());
+        }
+
+        return Optional.of(savedInscription);
     }
 
     @Override
@@ -82,7 +115,7 @@ public class InscriptionCommandService implements IInscriptionService {
                 .orElseThrow(() -> new IllegalArgumentException("Enrollment with ID " + command.inscriptionId() + " not found."));
 
         Activity activity = activityRepository.findById(inscriptionToDelete.getActividadId())
-                .orElseThrow(() -> new IllegalStateException("Associated activity not found for inscription ID " + inscriptionToDelete.getInscription_id())); // Corrected field name
+                .orElseThrow(() -> new IllegalStateException("Associated activity not found for inscription ID " + inscriptionToDelete.getInscription_id()));
 
         activity.tryDecrementInscriptionsActuales();
         activityRepository.save(activity);
@@ -99,7 +132,6 @@ public class InscriptionCommandService implements IInscriptionService {
     public Optional<Inscription> handle(GetInscriptionByIdQuery query) {
         throw new UnsupportedOperationException("Query operations should be handled by InscriptionQueryService");
     }
-
 
     @Override
     public List<Inscription> handle(GetInscriptionsByActivityIdQuery query) {

@@ -3,6 +3,12 @@ package com.VolunTrack.demo.Participation.Application.Internal.CommandServices;
 import com.VolunTrack.demo.Participation.Domain.Model.Aggregates.Certificate;
 import com.VolunTrack.demo.Participation.Domain.Model.Commands.CreateCertificateCommand;
 import com.VolunTrack.demo.Participation.Domain.Services.ICertificateService;
+import com.VolunTrack.demo.Notifications.Domain.Services.INotificationCommandService;
+import com.VolunTrack.demo.Notifications.Domain.Model.Commands.CreateNotificationCommand;
+import com.VolunTrack.demo.Notifications.Domain.Model.Enums.NotificationType;
+import com.VolunTrack.demo.Notifications.Domain.Model.Enums.RecipientType;
+import com.VolunTrack.demo.ActivityRegistration.Domain.Repositories.IInscriptionRepository;
+import com.VolunTrack.demo.Participation.Domain.Repositories.IParticipationRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -15,9 +21,16 @@ import java.util.Optional;
 public class CertificateCommandService {
 
     private final ICertificateService certificateService;
+    private final INotificationCommandService notificationCommandService;
+    private final IParticipationRepository participationRepository;
+    private final IInscriptionRepository inscriptionRepository;
 
-    public CertificateCommandService(ICertificateService certificateService) {
+
+    public CertificateCommandService(ICertificateService certificateService, INotificationCommandService notificationCommandService, IParticipationRepository participationRepository, IInscriptionRepository inscriptionRepository) {
         this.certificateService = certificateService;
+        this.notificationCommandService = notificationCommandService;
+        this.participationRepository = participationRepository;
+        this.inscriptionRepository = inscriptionRepository;
     }
 
     /**
@@ -28,9 +41,30 @@ public class CertificateCommandService {
      * @return An Optional containing the issued Certificate if successful, or empty otherwise.
      */
     public Optional<Certificate> handle(CreateCertificateCommand command) {
-        return certificateService.issueCertificate(
+        Optional<Certificate> issuedCertificate = certificateService.issueCertificate(
                 command.participationId(),
                 command.description()
         );
+
+        issuedCertificate.ifPresent(certificate -> {
+
+            try {
+
+                participationRepository.findById(command.participationId()).ifPresent(participation -> {
+                    inscriptionRepository.findById(participation.getId()).ifPresent(inscription -> {
+                        CreateNotificationCommand notificationCommand = new CreateNotificationCommand(
+                                NotificationType.CERTIFICATE_READY,
+                                inscription.getVoluntarioId(),
+                                RecipientType.VOLUNTEER
+                        );
+                        notificationCommandService.handle(notificationCommand);
+                    });
+                });
+            } catch (Exception e) {
+                System.err.println("Error creating certificate-ready notification for participation " + command.participationId() + ": " + e.getMessage());
+            }
+        });
+
+        return issuedCertificate;
     }
 }

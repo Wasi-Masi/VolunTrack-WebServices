@@ -5,6 +5,10 @@ import com.VolunTrack.demo.VolunteerRegistration.Domain.Model.Commands.CreateVol
 import com.VolunTrack.demo.VolunteerRegistration.Domain.Model.Commands.DeleteVolunteerCommand;
 import com.VolunTrack.demo.VolunteerRegistration.Domain.Model.Commands.UpdateVolunteerCommand;
 import com.VolunTrack.demo.VolunteerRegistration.Domain.Services.IVolunteerService;
+import com.VolunTrack.demo.Notifications.Domain.Services.INotificationCommandService;
+import com.VolunTrack.demo.Notifications.Domain.Model.Commands.CreateNotificationCommand;
+import com.VolunTrack.demo.Notifications.Domain.Model.Enums.NotificationType;
+import com.VolunTrack.demo.Notifications.Domain.Model.Enums.RecipientType;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -18,14 +22,17 @@ import java.util.Optional;
 public class VolunteerCommandService {
 
     private final IVolunteerService volunteerService;
+    private final INotificationCommandService notificationCommandService;
 
     /**
      * Constructs a new VolunteerCommandService.
      *
      * @param volunteerService The domain service for volunteers.
      */
-    public VolunteerCommandService(IVolunteerService volunteerService) {
+    public VolunteerCommandService(IVolunteerService volunteerService, INotificationCommandService notificationCommandService) {
         this.volunteerService = volunteerService;
+        this.notificationCommandService = notificationCommandService;
+
     }
 
     /**
@@ -35,8 +42,7 @@ public class VolunteerCommandService {
      * @return An Optional containing the created Volunteer if successful, otherwise empty.
      */
     public Optional<Volunteer> handle(CreateVolunteerCommand command) {
-
-        return volunteerService.createVolunteer(
+        Optional<Volunteer> createdVolunteer = volunteerService.createVolunteer(
                 command.firstName(),
                 command.lastName(),
                 command.dni(),
@@ -47,6 +53,21 @@ public class VolunteerCommandService {
                 command.organizationId(),
                 command.profession()
         );
+
+        createdVolunteer.ifPresent(volunteer -> {
+            try {
+                CreateNotificationCommand notificationCommand = new CreateNotificationCommand(
+                        NotificationType.SIGNUP,
+                        volunteer.getId(),
+                        RecipientType.VOLUNTEER
+                );
+                notificationCommandService.handle(notificationCommand);
+            } catch (Exception e) {
+                System.err.println("Error creating signup notification for volunteer " + volunteer.getId() + ": " + e.getMessage());
+            }
+        });
+
+        return createdVolunteer;
     }
 
     /**

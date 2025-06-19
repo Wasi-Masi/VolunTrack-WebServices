@@ -12,6 +12,7 @@ import com.VolunTrack.demo.ActivityRegistration.Interfaces.REST.Resources.Update
 import com.VolunTrack.demo.ActivityRegistration.Interfaces.REST.Transform.CreateInscriptionCommandFromResourceAssembler;
 import com.VolunTrack.demo.ActivityRegistration.Interfaces.REST.Transform.InscriptionResourceFromEntityAssembler;
 import com.VolunTrack.demo.ActivityRegistration.Interfaces.REST.Transform.UpdateInscriptionCommandFromResourceAssembler;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -35,6 +36,7 @@ public class InscriptionController {
         this.inscriptionQueryService = inscriptionQueryService;
     }
 
+    @Operation(summary = "Create a inscription", description = "Creates a new inscription in the system.")
     @PostMapping
     public ResponseEntity<InscriptionResource> createInscription(@RequestBody CreateInscriptionResource resource) {
         var command = CreateInscriptionCommandFromResourceAssembler.toCommandFromResource(resource);
@@ -52,6 +54,7 @@ public class InscriptionController {
         }
     }
 
+    @Operation(summary = "Get all inscriptions", description = "Retrieves a list of all registered inscriptions.")
     @GetMapping
     public ResponseEntity<List<InscriptionResource>> getAllInscriptions() {
         var getAllInscriptionsQuery = new GetAllInscriptionsQuery();
@@ -62,6 +65,7 @@ public class InscriptionController {
         return ResponseEntity.ok(inscriptionResources);
     }
 
+    @Operation(summary = "Get inscription by ID", description = "Retrieves an inscription's details by its unique identifier.")
     @GetMapping("/{inscriptionId}")
     public ResponseEntity<InscriptionResource> getInscriptionById(@PathVariable Long inscriptionId) {
         var getInscriptionByIdQuery = new GetInscriptionByIdQuery(inscriptionId);
@@ -71,17 +75,18 @@ public class InscriptionController {
         ).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    // NUEVO ENDPOINT: get Inscriptions by ActivityId
+    @Operation(summary = "Get inscription by activity ID", description = "Retrieves an inscription's details by activity ID.")
     @GetMapping("/byActivity/{activityId}")
     public ResponseEntity<List<InscriptionResource>> getInscriptionsByActivityId(@PathVariable Long activityId) {
         var query = new GetInscriptionsByActivityIdQuery(activityId);
-        var inscriptions = inscriptionQueryService.handle(query); // Llama al QueryService
+        var inscriptions = inscriptionQueryService.handle(query);
         var inscriptionResources = inscriptions.stream()
                 .map(InscriptionResourceFromEntityAssembler::toResourceFromEntity)
                 .collect(Collectors.toList());
         return ResponseEntity.ok(inscriptionResources);
     }
 
+    @Operation(summary = "Update an inscription", description = "Updates the details of an existing inscription.")
     @PutMapping("/{inscriptionId}")
     public ResponseEntity<InscriptionResource> updateInscription(@PathVariable Long inscriptionId, @RequestBody UpdateInscriptionResource resource) {
         var command = UpdateInscriptionCommandFromResourceAssembler.toCommandFromResource(inscriptionId, resource);
@@ -95,6 +100,7 @@ public class InscriptionController {
         }
     }
 
+    @Operation(summary = "Delete an inscription", description = "Deletes an inscription from the system by its unique identifier.")
     @DeleteMapping("/{inscriptionId}")
     public ResponseEntity<?> deleteInscription(@PathVariable Long inscriptionId) {
         try {

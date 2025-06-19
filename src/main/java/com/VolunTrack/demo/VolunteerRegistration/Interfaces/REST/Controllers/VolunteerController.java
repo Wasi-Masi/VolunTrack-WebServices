@@ -78,6 +78,7 @@ public class VolunteerController {
                     @ApiResponse(responseCode = "400", description = "Invalid input data"),
                     @ApiResponse(responseCode = "409", description = "Volunteer with given DNI or email already exists")
             })
+
     @PostMapping
     public ResponseEntity<VolunteerResource> createVolunteer(@RequestBody @Valid CreateVolunteerResource resource) {
         CreateVolunteerCommand command = createVolunteerCommandFromResourceAssembler.toCommandFromResource(resource);
