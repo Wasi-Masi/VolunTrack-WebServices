@@ -10,6 +10,9 @@ import java.util.Optional;
  * This interface also defines custom queries specific to Organization operations.
  */
 public interface IOrganizationRepository extends JpaRepository<Organization, Long> {
+
+    Optional<Organization> findByName(String name);
+    boolean existsByName(String name);
     /**
      * Finds an organization by its email address.
      * Spring Data JPA will automatically generate the implementation for this method.

@@ -1,53 +1,50 @@
 package com.VolunTrack.demo.VolunteerRegistration.Application.Internal.QueryServices;
 
 import com.VolunTrack.demo.VolunteerRegistration.Domain.Model.Aggregates.Organization;
+import com.VolunTrack.demo.VolunteerRegistration.Domain.Model.Commands.CreateOrganizationCommand;
+import com.VolunTrack.demo.VolunteerRegistration.Domain.Model.Commands.DeleteOrganizationCommand;
+import com.VolunTrack.demo.VolunteerRegistration.Domain.Model.Commands.UpdateOrganizationCommand;
 import com.VolunTrack.demo.VolunteerRegistration.Domain.Model.Queries.GetOrganizationQuery;
 import com.VolunTrack.demo.VolunteerRegistration.Domain.Repositories.IOrganizationRepository;
+import com.VolunTrack.demo.VolunteerRegistration.Domain.Services.IOrganizationService; // Corrected path to IOrganizationService
 import org.springframework.stereotype.Service;
+
 import java.util.List;
 import java.util.Optional;
 
-/**
- * Query service for retrieving Organization-related data.
- * This service handles incoming queries and delegates data retrieval to the organization repository.
- */
 @Service
-public class OrganizationQueryService {
+public class OrganizationQueryService implements IOrganizationService {
 
     private final IOrganizationRepository organizationRepository;
 
-    /**
-     * Constructs a new OrganizationQueryService.
-     *
-     * @param organizationRepository The repository for Organization entities.
-     */
     public OrganizationQueryService(IOrganizationRepository organizationRepository) {
         this.organizationRepository = organizationRepository;
     }
 
-    /**
-     * Handles the query to retrieve a specific organization by its ID.
-     * (Este método puede permanecer si hay otros usos internos o si decides en el futuro tener más de una organización)
-     *
-     * @param query The query containing the organization ID.
-     * @return An Optional containing the Organization if found, otherwise empty.
-     */
+    @Override
     public Optional<Organization> handle(GetOrganizationQuery query) {
         return organizationRepository.findById(query.organizationId());
     }
 
-    /**
-     * Retrieves the single organization available in the system.
-     * This method assumes there should only be one organization stored.
-     * It fetches all organizations and returns the first one found, if any.
-     *
-     * @return An Optional containing the single Organization if found, or empty otherwise.
-     */
-    public Optional<Organization> getTheSingleOrganization() {
-        List<Organization> organizations = organizationRepository.findAll();
-        if (organizations.isEmpty()) {
-            return Optional.empty();
-        }
-        return Optional.of(organizations.get(0));
+    // Command handling methods (delegated to OrganizationCommandService)
+    @Override
+    public Optional<Organization> handle(CreateOrganizationCommand command) {
+        throw new UnsupportedOperationException("Command operations should be handled by OrganizationCommandService");
+    }
+
+    @Override
+    public Optional<Organization> handle(UpdateOrganizationCommand command) {
+        throw new UnsupportedOperationException("Command operations should be handled by OrganizationCommandService");
+    }
+
+    @Override
+    public void handle(DeleteOrganizationCommand command) {
+        throw new UnsupportedOperationException("Command operations should be handled by OrganizationCommandService");
+    }
+
+
+    public List<Organization> handle(List<GetOrganizationQuery> queries) {
+
+        throw new UnsupportedOperationException("Querying multiple organizations with a list of GetOrganizationQuery is not supported by this service.");
     }
 }
