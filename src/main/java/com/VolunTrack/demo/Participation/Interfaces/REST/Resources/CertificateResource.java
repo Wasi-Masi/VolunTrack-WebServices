@@ -1,4 +1,11 @@
 package com.VolunTrack.demo.Participation.Interfaces.REST.Resources;
 
-public class CertificateResource {
+/**
+ * Resource for representing a Certificate record in REST responses.
+ */
+public record CertificateResource(
+        Long id,
+        String description,
+        Long participationId
+) {
 }
