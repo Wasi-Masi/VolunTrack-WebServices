@@ -5,6 +5,7 @@ import com.VolunTrack.demo.ActivityRegistration.Application.Internal.QueryServic
 import com.VolunTrack.demo.ActivityRegistration.Domain.Model.Commands.DeleteInscriptionCommand;
 import com.VolunTrack.demo.ActivityRegistration.Domain.Model.Queries.GetAllInscriptionsQuery;
 import com.VolunTrack.demo.ActivityRegistration.Domain.Model.Queries.GetInscriptionByIdQuery;
+import com.VolunTrack.demo.ActivityRegistration.Domain.Model.Queries.GetInscriptionsByActivityIdQuery;
 import com.VolunTrack.demo.ActivityRegistration.Interfaces.REST.Resources.CreateInscriptionResource;
 import com.VolunTrack.demo.ActivityRegistration.Interfaces.REST.Resources.InscriptionResource;
 import com.VolunTrack.demo.ActivityRegistration.Interfaces.REST.Resources.UpdateInscriptionResource;
@@ -28,6 +29,7 @@ public class InscriptionController {
     private final InscriptionCommandService inscriptionCommandService;
     private final InscriptionQueryService inscriptionQueryService;
 
+    // Tu constructor existente
     public InscriptionController(InscriptionCommandService inscriptionCommandService, InscriptionQueryService inscriptionQueryService) {
         this.inscriptionCommandService = inscriptionCommandService;
         this.inscriptionQueryService = inscriptionQueryService;
@@ -43,6 +45,10 @@ public class InscriptionController {
             ).orElseGet(() -> ResponseEntity.badRequest().build());
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().header("X-Error-Message", e.getMessage()).build();
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .header("X-Error-Message", e.getMessage())
+                    .build();
         }
     }
 
@@ -65,13 +71,28 @@ public class InscriptionController {
         ).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
+    // NUEVO ENDPOINT: get Inscriptions by ActivityId
+    @GetMapping("/byActivity/{activityId}")
+    public ResponseEntity<List<InscriptionResource>> getInscriptionsByActivityId(@PathVariable Long activityId) {
+        var query = new GetInscriptionsByActivityIdQuery(activityId);
+        var inscriptions = inscriptionQueryService.handle(query); // Llama al QueryService
+        var inscriptionResources = inscriptions.stream()
+                .map(InscriptionResourceFromEntityAssembler::toResourceFromEntity)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(inscriptionResources);
+    }
+
     @PutMapping("/{inscriptionId}")
     public ResponseEntity<InscriptionResource> updateInscription(@PathVariable Long inscriptionId, @RequestBody UpdateInscriptionResource resource) {
         var command = UpdateInscriptionCommandFromResourceAssembler.toCommandFromResource(inscriptionId, resource);
-        var updatedInscription = inscriptionCommandService.handle(command);
-        return updatedInscription.map(value ->
-                ResponseEntity.ok(InscriptionResourceFromEntityAssembler.toResourceFromEntity(value))
-        ).orElseGet(() -> ResponseEntity.notFound().build());
+        try {
+            var updatedInscription = inscriptionCommandService.handle(command);
+            return updatedInscription.map(value ->
+                    ResponseEntity.ok(InscriptionResourceFromEntityAssembler.toResourceFromEntity(value))
+            ).orElseGet(() -> ResponseEntity.notFound().build());
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            return ResponseEntity.badRequest().header("X-Error-Message", e.getMessage()).build();
+        }
     }
 
     @DeleteMapping("/{inscriptionId}")
@@ -82,6 +103,10 @@ public class InscriptionController {
             return ResponseEntity.noContent().build();
         } catch (IllegalArgumentException e) {
             return ResponseEntity.notFound().build();
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .header("X-Error-Message", e.getMessage())
+                    .build();
         }
     }
 }

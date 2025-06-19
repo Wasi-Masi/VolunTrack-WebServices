@@ -6,14 +6,16 @@ import com.VolunTrack.demo.ActivityRegistration.Domain.Model.Commands.DeleteInsc
 import com.VolunTrack.demo.ActivityRegistration.Domain.Model.Commands.UpdateInscriptionCommand;
 import com.VolunTrack.demo.ActivityRegistration.Domain.Model.Queries.GetAllInscriptionsQuery;
 import com.VolunTrack.demo.ActivityRegistration.Domain.Model.Queries.GetInscriptionByIdQuery;
+import com.VolunTrack.demo.ActivityRegistration.Domain.Model.Queries.GetInscriptionsByActivityIdQuery; // NEW
 import com.VolunTrack.demo.ActivityRegistration.Domain.Repositories.IInscriptionRepository;
+import com.VolunTrack.demo.ActivityRegistration.Domain.Services.IInscriptionService;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
 
 @Service
-public class InscriptionQueryService implements com.VolunTrack.demo.ActivityRegistration.Application.Services.IInscriptionService {
+public class InscriptionQueryService implements IInscriptionService {
 
     private final IInscriptionRepository inscriptionRepository;
 
@@ -31,7 +33,12 @@ public class InscriptionQueryService implements com.VolunTrack.demo.ActivityRegi
         return inscriptionRepository.findById(query.inscriptionId());
     }
 
-    // Query service does not handle commands, throw UnsupportedOperationException
+    @Override
+    public List<Inscription> handle(GetInscriptionsByActivityIdQuery query) { // NEW implementation
+        return inscriptionRepository.findByActividadId(query.activityId());
+    }
+
+    // Command methods (still throwing UnsupportedOperationException)
     @Override
     public Optional<Inscription> handle(CreateInscriptionCommand command) {
         throw new UnsupportedOperationException("Command operations should be handled by InscriptionCommandService");
