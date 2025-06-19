@@ -8,6 +8,5 @@ import java.util.Optional;
 
 @Repository
 public interface IActivityRepository extends JpaRepository<Activity, Long> {
-    // Custom query methods can be added here if needed
     Optional<Activity> findByTitulo(String titulo);
 }

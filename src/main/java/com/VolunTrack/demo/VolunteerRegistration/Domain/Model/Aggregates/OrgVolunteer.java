@@ -33,7 +33,7 @@ public class OrgVolunteer {
      */
     @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("organizationId")
-    @JoinColumn(name = "organization_id", foreignKey = @ForeignKey(name = "FK_org_volunteer_organization")) // Nombre de la columna FK
+    @JoinColumn(name = "organization_id", foreignKey = @ForeignKey(name = "FK_org_volunteer_organization"))
     private Organization organization;
 
     /**
@@ -42,9 +42,9 @@ public class OrgVolunteer {
      * @MapsId("volunteerId") indicates that the 'volunteerId' part of the composite key
      * is mapped from the ID of the Volunteer entity.
      */
-    @ManyToOne(fetch = FetchType.LAZY) // Relación muchos a uno con Volunteer
-    @MapsId("volunteerId") // Mapea la parte 'volunteerId' de la clave compuesta
-    @JoinColumn(name = "volunteer_id", foreignKey = @ForeignKey(name = "FK_org_volunteer_volunteer")) // Nombre de la columna FK
+    @ManyToOne(fetch = FetchType.LAZY)
+    @MapsId("volunteerId")
+    @JoinColumn(name = "volunteer_id", foreignKey = @ForeignKey(name = "FK_org_volunteer_volunteer"))
     private Volunteer volunteer;
 
     /**

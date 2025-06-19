@@ -1,3 +1,4 @@
+
 package com.VolunTrack.demo.ActivityRegistration.Interfaces.REST.Resources;
 
 import com.VolunTrack.demo.ActivityRegistration.Domain.Model.Enums.InscriptionStatus;

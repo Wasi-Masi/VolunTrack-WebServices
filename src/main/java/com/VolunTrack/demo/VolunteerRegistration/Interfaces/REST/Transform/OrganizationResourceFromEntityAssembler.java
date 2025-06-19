@@ -17,7 +17,7 @@ public class OrganizationResourceFromEntityAssembler {
      * @param entity The Organization entity to convert.
      * @return The corresponding OrganizationResource.
      */
-    public OrganizationResource toResourceFromEntity(Organization entity) {
+    public static OrganizationResource toResourceFromEntity(Organization entity) {
         return new OrganizationResource(
                 entity.getId(),
                 entity.getName(),

@@ -9,8 +9,8 @@ import java.util.Optional;
 
 @Repository
 public interface IInscriptionRepository extends JpaRepository<Inscription, Long> {
-    // Custom query methods
-    List<Inscription> findByVoluntarioId(Long voluntarioId); // CHANGED
-    List<Inscription> findByActividadId(Long actividadId);   // CHANGED
-    Optional<Inscription> findByVoluntarioIdAndActividadId(Long voluntarioId, Long actividadId); // CHANGED
+
+    List<Inscription> findByVoluntarioId(Long voluntarioId);
+    List<Inscription> findByActividadId(Long actividadId);
+    Optional<Inscription> findByVoluntarioIdAndActividadId(Long voluntarioId, Long actividadId);
 }
