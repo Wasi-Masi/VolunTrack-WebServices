@@ -1,0 +1,4 @@
+package com.VolunTrack.demo.Participation.Domain.Model.Queries;
+
+public class GetCertificatesByUserIdQuery {
+}
