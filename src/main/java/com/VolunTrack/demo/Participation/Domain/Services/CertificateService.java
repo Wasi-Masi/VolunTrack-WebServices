@@ -1,4 +1,87 @@
 package com.VolunTrack.demo.Participation.Domain.Services;
 
-public class CertificateService {
+import com.VolunTrack.demo.Participation.Domain.Model.Aggregates.Certificate;
+import com.VolunTrack.demo.Participation.Domain.Model.Aggregates.Participation;
+import com.VolunTrack.demo.Participation.Domain.Repositories.ICertificateRepository;
+import com.VolunTrack.demo.Participation.Domain.Repositories.IParticipationRepository;
+import com.VolunTrack.demo.Shared.Domain.Repositories.IUnitOfWork;
+import com.VolunTrack.demo.VolunteerRegistration.Domain.Repositories.IVolunteerRepository;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+/**
+ * Domain Service implementation for Certificate-related business operations.
+ * This class handles logic for issuing and retrieving certificates.
+ */
+@Service
+public class CertificateService implements ICertificateService {
+
+    private final ICertificateRepository certificateRepository;
+    private final IParticipationRepository participationRepository;
+    private final IVolunteerRepository volunteerRepository;
+    private final IUnitOfWork unitOfWork;
+
+    public CertificateService(ICertificateRepository certificateRepository,
+                              IParticipationRepository participationRepository,
+                              IVolunteerRepository volunteerRepository,
+                              IUnitOfWork unitOfWork) {
+        this.certificateRepository = certificateRepository;
+        this.participationRepository = participationRepository;
+        this.volunteerRepository = volunteerRepository;
+        this.unitOfWork = unitOfWork;
+    }
+
+    @Override
+    @Transactional
+    public Optional<Certificate> issueCertificate(Long participationId, String description) {
+        return participationRepository.findById(participationId).flatMap(participation -> {
+            if (certificateRepository.findByParticipation(participation).isPresent()) {
+                System.out.println("Error: A certificate already exists for participation ID " + participationId);
+                return Optional.empty();
+            }
+
+            Certificate certificate = new Certificate(description, participation);
+            Certificate savedCertificate = certificateRepository.save(certificate);
+            unitOfWork.complete();
+            return Optional.of(savedCertificate);
+        });
+    }
+
+    @Override
+    public Optional<Certificate> getCertificateById(Long certificateId) {
+        return certificateRepository.findById(certificateId);
+    }
+
+    @Override
+    public Optional<Certificate> getCertificateByParticipationId(Long participationId) {
+        return participationRepository.findById(participationId)
+                .flatMap(certificateRepository::findByParticipation);
+    }
+
+    @Override
+    public List<Certificate> getCertificatesByVolunteerId(Long volunteerId) {
+        return volunteerRepository.findById(volunteerId)
+                .map(volunteer -> {
+                    List<Participation> participations = participationRepository.findByVolunteer(volunteer);
+                    return participations.stream()
+                            .flatMap(p -> certificateRepository.findByParticipation(p).stream())
+                            .collect(Collectors.toList());
+                })
+                .orElse(List.of());
+    }
+
+    @Override
+    @Transactional
+    public boolean deleteCertificate(Long certificateId) {
+        if (!certificateRepository.existsById(certificateId)) {
+            return false;
+        }
+        certificateRepository.deleteById(certificateId);
+        unitOfWork.complete();
+        return true;
+    }
 }
