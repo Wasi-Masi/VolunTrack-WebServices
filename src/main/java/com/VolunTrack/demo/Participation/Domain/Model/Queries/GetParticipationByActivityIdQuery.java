@@ -1,4 +1,9 @@
 package com.VolunTrack.demo.Participation.Domain.Model.Queries;
 
-public class GetParticipationByActivityIdQuery {
+/**
+ * Query to retrieve participation records by an activity's ID.
+ */
+public record GetParticipationByActivityIdQuery(
+        Long activityId
+) {
 }
