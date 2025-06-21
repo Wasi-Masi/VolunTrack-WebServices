@@ -9,6 +9,12 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * JPA repository for the Participation entity.
+ * Provides CRUD operations and custom queries
+ * to manage the relationship between volunteers and activities.
+ */
+
 @Repository
 public interface IParticipationRepository extends JpaRepository<Participation, Long> {
     Optional<Participation> findByVolunteerAndActivity(Volunteer volunteer, Activity activity);

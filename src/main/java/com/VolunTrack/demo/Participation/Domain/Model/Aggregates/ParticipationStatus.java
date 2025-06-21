@@ -6,5 +6,5 @@ package com.VolunTrack.demo.Participation.Domain.Model.Aggregates;
 public enum ParticipationStatus {
     REGISTERED,
     COMPLETED,
-    CANCELLED
+    CANCELED
 }
