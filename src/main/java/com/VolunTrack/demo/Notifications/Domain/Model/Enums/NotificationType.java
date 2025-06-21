@@ -1,14 +1,14 @@
 package com.VolunTrack.demo.Notifications.Domain.Model.Enums;
 
 public enum NotificationType {
-    SIGNUP("¡Bienvenido a VolunTrack!", "Tu cuenta ha sido creada exitosamente. Ya puedes unirte a actividades."),
-    LOGIN("Sesión iniciada", "Has iniciado sesión correctamente."),
-    NEW_ACTIVITY("Actividad creada", "Has creado una nueva actividad de voluntariado. ¡Comparte para sumar voluntarios!"),
-    JOINED_ACTIVITY("Inscripción confirmada", "Te has inscrito en una nueva actividad. ¡Gracias por tu compromiso!"),
-    VOLUNTEER_JOINED("Nuevo voluntario", "Un voluntario se ha unido a una de tus actividades. Revisa los detalles."),
-    CERTIFICATE_READY("Certificado disponible", "Tu certificado de participación ya está disponible para descargar."),
-    REMINDER("Recordatorio de actividad", "Tienes una actividad programada pronto. No olvides revisar los detalles."),
-    GENERIC("Notificación", "Tienes una nueva notificación en VolunTrack.");
+    SIGNUP("Welcome to VolunTrack!", "Your account has been successfully created. You can now join activities."),
+    LOGIN("Session started", "You have successfully logged in."),
+    NEW_ACTIVITY("Activity created", "You have created a new volunteer activity. Share to add volunteers!"),
+    JOINED_ACTIVITY("Registration confirmed", "You have signed up for a new activity. Thank you for your commitment!"),
+    VOLUNTEE_JOINED("New volunteer", "A volunteer has joined one of your activities. Review the details."),
+    CERTIFICATE_READY("Certificate available", "Your participation certificate is now available for download."),
+    REMINDER("Activity reminder", "You have an activity scheduled soon. Don't forget to review the details."),
+    GENERIC("Notification", "You have a new notification in VolunTrack.");
 
     private final String defaultTitle;
     private final String defaultMessage;
