@@ -5,5 +5,5 @@ public enum InscriptionStatus {
     APPROVED,
     REJECTED,
     COMPLETED,
-    CANCELLED
+    CANCELED
 }
