@@ -6,6 +6,7 @@ import com.VolunTrack.demo.Notifications.Domain.Model.Commands.CreateNotificatio
 import com.VolunTrack.demo.Notifications.Domain.Model.Commands.DeleteNotificationCommand;
 import com.VolunTrack.demo.Notifications.Domain.Repositories.INotificationRepository;
 import com.VolunTrack.demo.Notifications.Domain.Model.Enums.NotificationType;
+import org.apache.tomcat.util.modeler.NotificationInfo;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -25,14 +26,14 @@ public class NotificationCommandService implements INotificationCommandService {
         String title = type.getDefaultTitle();
         String message = type.getDefaultMessage();
 
-        Notification notification = new Notification(
+        Notification newNotification = new Notification(
                 type,
                 title,
                 message,
                 command.recipientId(),
                 command.recipientType()
         );
-        return Optional.of(notificationRepository.save(notification));
+        return Optional.of(notificationRepository.save(newNotification));
     }
 
     @Override
