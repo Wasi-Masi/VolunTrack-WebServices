@@ -5,7 +5,7 @@ public enum NotificationType {
     LOGIN("Session started", "You have successfully logged in."),
     NEW_ACTIVITY("Activity created", "You have created a new volunteer activity. Share to add volunteers!"),
     JOINED_ACTIVITY("Registration confirmed", "You have signed up for a new activity. Thank you for your commitment!"),
-    VOLUNTEE_JOINED("New volunteer", "A volunteer has joined one of your activities. Review the details."),
+    VOLUNTEER_JOINED("New volunteer", "A volunteer has joined one of your activities. Review the details."),
     CERTIFICATE_READY("Certificate available", "Your participation certificate is now available for download."),
     REMINDER("Activity reminder", "You have an activity scheduled soon. Don't forget to review the details."),
     GENERIC("Notification", "You have a new notification in VolunTrack.");
