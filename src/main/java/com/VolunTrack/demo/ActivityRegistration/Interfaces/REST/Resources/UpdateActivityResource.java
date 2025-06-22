@@ -10,7 +10,7 @@ import java.time.LocalTime;
  */
 public record UpdateActivityResource(
         LocalDate fecha, // The new date when the activity will take place
-        LocalTime horainicio, // The new start time of the activity
+        LocalTime horaInicio, // The new start time of the activity
         LocalTime horaFin, // The new end time of the activity
         String titulo, // The new title of the activity
         String descripcion, // The new description of the activity

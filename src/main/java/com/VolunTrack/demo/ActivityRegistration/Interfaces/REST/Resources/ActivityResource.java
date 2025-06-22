@@ -11,7 +11,7 @@ import java.time.LocalTime;
 public record ActivityResource(
         Long actividad_id, // The unique identifier of the activity
         LocalDate fecha, // The date when the activity takes place
-        LocalTime horainicio, // The start time of the activity
+        LocalTime horaInicio, // The start time of the activity
         LocalTime horaFin, // The end time of the activity
         String titulo, // The title of the activity
         String descripcion, // A description of the activity

@@ -23,7 +23,7 @@ public class ActivityResourceFromEntityAssembler {
         return new ActivityResource(
                 entity.getActividad_id(), // The unique identifier of the activity
                 entity.getFecha(), // The date of the activity
-                entity.getHorainicio(), // The start time of the activity
+                entity.getHoraInicio(), // The start time of the activity
                 entity.getHoraFin(), // The end time of the activity
                 entity.getTitulo(), // The title of the activity
                 entity.getDescripcion(), // A description of the activity

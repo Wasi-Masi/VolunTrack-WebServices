@@ -23,7 +23,7 @@ public class CreateActivityCommandFromResourceAssembler {
         // Mapping the fields from the resource to the command
         return new CreateActivityCommand(
                 resource.fecha(), // The date of the activity
-                resource.horainicio(), // The start time of the activity
+                resource.horaInicio(), // The start time of the activity
                 resource.horaFin(), // The end time of the activity
                 resource.titulo(), // The title of the activity
                 resource.descripcion(), // The description of the activity

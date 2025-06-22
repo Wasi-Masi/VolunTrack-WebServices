@@ -58,7 +58,7 @@ public class ActivityCommandService implements IActivityService {
         // Create a new activity from the command data
         Activity activity = new Activity(
                 command.fecha(),
-                command.horainicio(),
+                command.horaInicio(),
                 command.horaFin(),
                 command.titulo(),
                 command.descripcion(),
@@ -100,7 +100,7 @@ public class ActivityCommandService implements IActivityService {
         return activityRepository.findById(command.actividadId()).map(activity -> {
             // Update activity fields
             activity.setFecha(command.fecha());
-            activity.setHorainicio(command.horainicio());
+            activity.setHoraInicio(command.horaInicio());
             activity.setHoraFin(command.horaFin());
             activity.setTitulo(command.titulo());
             activity.setDescripcion(command.descripcion());

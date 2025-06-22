@@ -10,7 +10,7 @@ import java.time.LocalTime;
  */
 public record CreateActivityResource(
         LocalDate fecha, // The date when the activity will take place
-        LocalTime horainicio, // The start time of the activity
+        LocalTime horaInicio, // The start time of the activity
         LocalTime horaFin, // The end time of the activity
         String titulo, // The title of the activity
         String descripcion, // A description of the activity

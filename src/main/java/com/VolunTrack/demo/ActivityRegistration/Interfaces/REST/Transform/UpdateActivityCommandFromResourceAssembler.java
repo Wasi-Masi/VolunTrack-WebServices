@@ -25,7 +25,7 @@ public class UpdateActivityCommandFromResourceAssembler {
         return new UpdateActivityCommand(
                 actividadId, // The unique ID of the activity to update
                 resource.fecha(), // The new date of the activity
-                resource.horainicio(), // The new start time of the activity
+                resource.horaInicio(), // The new start time of the activity
                 resource.horaFin(), // The new end time of the activity
                 resource.titulo(), // The new title of the activity
                 resource.descripcion(), // The new description of the activity

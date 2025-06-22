@@ -34,7 +34,7 @@ public class Activity {
     private LocalDate fecha; // The date of the activity
 
     @Column(name = "hora_inicio", nullable = false)
-    private LocalTime horainicio; // Start time of the activity
+    private LocalTime horaInicio; // Start time of the activity
 
     @Column(name = "hora_fin", nullable = false)
     private LocalTime horaFin; // End time of the activity
@@ -69,7 +69,7 @@ public class Activity {
     /**
      * Constructor to initialize an activity with all necessary attributes, including a default value for inscriptions.
      * @param fecha - Date of the activity
-     * @param horainicio - Start time of the activity
+     * @param horaInicio - Start time of the activity
      * @param horaFin - End time of the activity
      * @param titulo - Title of the activity
      * @param descripcion - Description of the activity
@@ -80,11 +80,11 @@ public class Activity {
      * @param estado - Status of the activity
      * @param organizacion_id - ID of the organizing entity
      */
-    public Activity(LocalDate fecha, LocalTime horainicio, LocalTime horaFin, String titulo,
+    public Activity(LocalDate fecha, LocalTime horaInicio, LocalTime horaFin, String titulo,
                     String descripcion, String instrucciones, String proposito, int cupos,
                     String ubicacion, String estado, int organizacion_id) {
         this.fecha = fecha;
-        this.horainicio = horainicio;
+        this.horaInicio = horaInicio;
         this.horaFin = horaFin;
         this.titulo = titulo;
         this.descripcion = descripcion;
@@ -100,7 +100,7 @@ public class Activity {
     /**
      * Constructor to initialize an activity with a few mandatory attributes, and leaving instructions as optional.
      * @param fecha - Date of the activity
-     * @param horainicio - Start time of the activity
+     * @param horaInicio - Start time of the activity
      * @param horaFin - End time of the activity
      * @param titulo - Title of the activity
      * @param descripcion - Description of the activity
@@ -110,10 +110,10 @@ public class Activity {
      * @param estado - Status of the activity
      * @param organizacion_id - ID of the organizing entity
      */
-    public Activity(LocalDate fecha, LocalTime horainicio, LocalTime horaFin, String titulo,
+    public Activity(LocalDate fecha, LocalTime horaInicio, LocalTime horaFin, String titulo,
                     String descripcion, String proposito, int cupos,
                     String ubicacion, String estado, int organizacion_id) {
-        this(fecha, horainicio, horaFin, titulo, descripcion, null, proposito, cupos, ubicacion, estado, organizacion_id);
+        this(fecha, horaInicio, horaFin, titulo, descripcion, null, proposito, cupos, ubicacion, estado, organizacion_id);
     }
 
     /**

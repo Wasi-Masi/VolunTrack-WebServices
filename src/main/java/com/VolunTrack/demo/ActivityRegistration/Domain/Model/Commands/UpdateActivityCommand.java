@@ -23,7 +23,7 @@ public record UpdateActivityCommand(
         /// <summary>
         /// The new start time of the activity.
         /// </summary>
-        LocalTime horainicio, // The new start time of the activity.
+        LocalTime horaInicio, // The new start time of the activity.
 
         /// <summary>
         /// The new end time of the activity.

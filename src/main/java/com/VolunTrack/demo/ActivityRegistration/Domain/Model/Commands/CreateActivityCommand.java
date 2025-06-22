@@ -18,7 +18,7 @@ public record CreateActivityCommand(
         /// <summary>
         /// The start time of the activity.
         /// </summary>
-        LocalTime horainicio,
+        LocalTime horaInicio,
 
         /// <summary>
         /// The end time of the activity.
