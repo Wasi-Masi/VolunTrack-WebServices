@@ -1,5 +1,3 @@
-// src/main/java/com/VolunTrack/demo/IAM/Application/REST/AuthenticationController.java
-
 package com.VolunTrack.demo.IAM.Application.REST;
 
 import com.VolunTrack.demo.IAM.Application.REST.Resources.AuthenticationResponseResource;
@@ -8,6 +6,9 @@ import com.VolunTrack.demo.IAM.Application.REST.Resources.SignUpResource;
 import com.VolunTrack.demo.IAM.Domain.Model.Aggregates.User;
 import com.VolunTrack.demo.IAM.Infrastructure.Repositories.UserRepository;
 import com.VolunTrack.demo.IAM.Infrastructure.Tokens.JWT.JwtService;
+
+import com.VolunTrack.demo.VolunteerRegistration.Application.Internal.CommandServices.OrganizationCommandService;
+import com.VolunTrack.demo.VolunteerRegistration.Domain.Model.Commands.CreateOrganizationCommand; // Necesitarás este comando
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -31,17 +32,20 @@ public class AuthenticationController {
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
     private final UserDetailsService userDetailsService;
+    private final OrganizationCommandService organizationCommandService;
 
     public AuthenticationController(UserRepository userRepository,
                                     PasswordEncoder passwordEncoder,
                                     JwtService jwtService,
                                     AuthenticationManager authenticationManager,
-                                    UserDetailsService userDetailsService) {
+                                    UserDetailsService userDetailsService,
+                                    OrganizationCommandService organizationCommandService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
         this.authenticationManager = authenticationManager;
         this.userDetailsService = userDetailsService;
+        this.organizationCommandService = organizationCommandService;
     }
 
     @Operation(summary = "Register a user", description = "Creates a new user in the system.")
@@ -65,6 +69,22 @@ public class AuthenticationController {
         user.setBannerPictureUrl(signUpResource.getBannerPictureUrl());
 
         userRepository.save(user);
+
+        try {
+            CreateOrganizationCommand createOrganizationCommand = new CreateOrganizationCommand(
+                    signUpResource.getUsername(),     // Nombre de la organización
+                    signUpResource.getDescription(),  // Descripción de la organización
+                    signUpResource.getEmail(),        // Email de la organización
+                    signUpResource.getPlan()          // Plan de la organización
+            );
+            organizationCommandService.handle(createOrganizationCommand);
+            System.out.println("Organization created successfully for user: " + signUpResource.getUsername());
+
+        } catch (IllegalArgumentException e) {
+            System.err.println("Error creating organization for user " + signUpResource.getUsername() + ": " + e.getMessage());
+            userRepository.delete(user);
+            return new ResponseEntity<>("Failed to create organization: " + e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
 
         UserDetails userDetails = userDetailsService.loadUserByUsername(user.getUsername());
         String jwt = jwtService.generateToken(userDetails);

@@ -13,11 +13,14 @@ import org.springframework.stereotype.Service;
 import java.security.Key;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
+import com.VolunTrack.demo.IAM.Infrastructure.Tokens.TokenService;
+
 @Service
-public class JwtService {
+public class JwtService implements TokenService {
 
     @Value("${security.jwt.secret-key}")
     private String secretKey;
@@ -53,6 +56,26 @@ public class JwtService {
         final String username = extractUsername(token);
         return (username.equals(userDetails.getUsername())) && !isTokenExpired(token);
     }
+
+
+
+    @Override
+    public boolean validateToken(String token) {
+
+        return !isTokenExpired(token);
+    }
+
+    @Override
+    public String generateToken(String username) {
+
+        return generateToken(new org.springframework.security.core.userdetails.User(username, "", List.of()));
+    }
+
+    @Override
+    public String generateToken(String username, Map<String, Object> extraClaims) {
+        return generateToken(extraClaims, new org.springframework.security.core.userdetails.User(username, "", List.of()));
+    }
+
 
     private boolean isTokenExpired(String token) {
         return extractExpiration(token).before(new Date());

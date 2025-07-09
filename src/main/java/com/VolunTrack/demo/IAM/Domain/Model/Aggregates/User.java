@@ -1,4 +1,4 @@
-// src/main/java/com/VolunTrack/demo/iam/domain/model/aggregates/User.java
+// src/main/java/com/VolunTrack/demo/IAM/Domain/Model/Aggregates/User.java
 
 package com.VolunTrack.demo.IAM.Domain.Model.Aggregates;
 
@@ -7,6 +7,13 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
+import lombok.Builder; // Asegúrate de tener esta importación si usas @Builder
+
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails; // <-- ¡IMPORTANTE!
+import java.util.Collection;
+import java.util.List; // Para List.of()
 
 @Entity
 @Table(name = "users")
@@ -14,7 +21,8 @@ import lombok.AllArgsConstructor;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class User {
+@Builder
+public class User implements UserDetails { // <-- ¡IMPLEMENTAR USERDETAILS!
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -43,4 +51,42 @@ public class User {
     @Column(name = "banner_picture_url")
     private String bannerPictureUrl;
 
+
+
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+
+        return List.of(new SimpleGrantedAuthority("ROLE_USER"));
+    }
+
+    @Override
+    public String getPassword() {
+        return this.password;
+    }
+
+    @Override
+    public String getUsername() {
+        return this.username;
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return true;
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return true;
+    }
 }
