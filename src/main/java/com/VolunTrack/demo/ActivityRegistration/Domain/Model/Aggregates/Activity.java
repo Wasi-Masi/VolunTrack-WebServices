@@ -1,5 +1,10 @@
 package com.VolunTrack.demo.ActivityRegistration.Domain.Model.Aggregates;
 
+import com.VolunTrack.demo.ActivityRegistration.Domain.Model.ValueObjects.ActivityImage;
+
+import jakarta.persistence.CollectionTable;
+import jakarta.persistence.ElementCollection;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -12,6 +17,8 @@ import lombok.Setter;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Represents an Activity aggregate in the Activity Registration bounded context.
@@ -66,6 +73,9 @@ public class Activity {
     @Column(name = "organizacion_id", nullable = false)
     private int organizacion_id; // The ID of the organization hosting the activity
 
+    @ElementCollection
+    @CollectionTable(name = "activity_images", joinColumns = @JoinColumn(name = "actividad_id"))
+    private List<ActivityImage> imagenes = new ArrayList<>(); // The images of an activity
     /**
      * Constructor to initialize an activity with all necessary attributes, including a default value for inscriptions.
      * @param fecha - Date of the activity
@@ -79,10 +89,11 @@ public class Activity {
      * @param ubicacion - Location of the activity
      * @param estado - Status of the activity
      * @param organizacion_id - ID of the organizing entity
+     * @param imagenes - List of ActivityImage objects for the activity
      */
     public Activity(LocalDate fecha, LocalTime horaInicio, LocalTime horaFin, String titulo,
                     String descripcion, String instrucciones, String proposito, int cupos,
-                    String ubicacion, String estado, int organizacion_id) {
+                    String ubicacion, String estado, int organizacion_id, List<ActivityImage> imagenes) {
         this.fecha = fecha;
         this.horaInicio = horaInicio;
         this.horaFin = horaFin;
@@ -95,6 +106,7 @@ public class Activity {
         this.estado = estado;
         this.organizacion_id = organizacion_id;
         this.inscripcionesActuales = 0; // Initialize to 0 when creating a new activity
+        this.imagenes = (imagenes != null) ? new ArrayList<>(imagenes) : new ArrayList<>();
     }
 
     /**
@@ -113,7 +125,7 @@ public class Activity {
     public Activity(LocalDate fecha, LocalTime horaInicio, LocalTime horaFin, String titulo,
                     String descripcion, String proposito, int cupos,
                     String ubicacion, String estado, int organizacion_id) {
-        this(fecha, horaInicio, horaFin, titulo, descripcion, null, proposito, cupos, ubicacion, estado, organizacion_id);
+        this(fecha, horaInicio, horaFin, titulo, descripcion, null, proposito, cupos, ubicacion, estado, organizacion_id, new ArrayList<>());
     }
 
     /**
@@ -148,5 +160,17 @@ public class Activity {
      */
     public boolean hasAvailableSlots() {
         return this.inscripcionesActuales < this.cupos; // Returns true if current inscriptions are less than total slots
+    }
+
+    public void addImagen(String imageUrl) {
+        this.imagenes.add(new ActivityImage(imageUrl));
+    }
+
+    public void addImagen(ActivityImage image) {
+        this.imagenes.add(image);
+    }
+
+    public void removeImagen(ActivityImage image) {
+        this.imagenes.remove(image);
     }
 }

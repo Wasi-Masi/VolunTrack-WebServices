@@ -2,6 +2,7 @@ package com.VolunTrack.demo.ActivityRegistration.Interfaces.REST.Resources;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.List;
 
 /**
  * The ActivityResource class is used to represent an activity in the API response.
@@ -20,6 +21,7 @@ public record ActivityResource(
         int cupos, // The number of available spots for the activity
         String ubicacion, // The location where the activity takes place
         String estado, // The current status of the activity (e.g., "active", "completed")
-        int organizacionId // The ID of the organization that is organizing the activity
+        int organizacionId, // The ID of the organization that is organizing the activity
+        List<String> imagenes // The list of images urls for the activity
 ) {
 }

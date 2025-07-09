@@ -2,6 +2,7 @@ package com.VolunTrack.demo.ActivityRegistration.Interfaces.REST.Resources;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.List;
 
 /**
  * The CreateActivityResource class is used to represent the data required to create a new activity.
@@ -19,6 +20,7 @@ public record CreateActivityResource(
         int cupos, // The number of available spots for the activity
         String ubicacion, // The location where the activity will be held
         String estado, // The status of the activity (e.g., "active", "completed")
-        int organizacionId // The ID of the organization that is organizing the activity
+        int organizacionId, // The ID of the organization that is organizing the activity
+        List<String> imagenes // The list of images urls for the activity
 ) {
 }

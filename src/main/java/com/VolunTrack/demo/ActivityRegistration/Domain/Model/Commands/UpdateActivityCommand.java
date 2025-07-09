@@ -1,7 +1,9 @@
 package com.VolunTrack.demo.ActivityRegistration.Domain.Model.Commands;
 
+import com.VolunTrack.demo.ActivityRegistration.Domain.Model.ValueObjects.ActivityImage;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.List;
 
 /**
  * Represents a command to update an existing activity.
@@ -68,6 +70,11 @@ public record UpdateActivityCommand(
         /// <summary>
         /// The new ID of the organization hosting the activity.
         /// </summary>
-        int organizacionId // The new organization ID for the activity.
+        int organizacionId, // The new organization ID for the activity.
+
+        /// <summary>
+        /// The updated list of image URLs associated with the activity.
+        /// </summary>
+        List<ActivityImage> imagenes
 ) {
 }

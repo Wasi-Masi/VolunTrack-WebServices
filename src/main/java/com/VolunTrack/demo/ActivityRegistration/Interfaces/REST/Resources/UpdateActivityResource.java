@@ -2,6 +2,7 @@ package com.VolunTrack.demo.ActivityRegistration.Interfaces.REST.Resources;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.List;
 
 /**
  * The UpdateActivityResource class represents the data required to update an existing activity.
@@ -19,6 +20,7 @@ public record UpdateActivityResource(
         int cupos, // The new number of available spots for the activity
         String ubicacion, // The new location where the activity will be held
         String estado, // The new status of the activity (e.g., "active", "completed")
-        int organizacionId // The new organization ID responsible for the activity
+        int organizacionId, // The new organization ID responsible for the activity
+        List<String> imagenes // The list of images urls for the activity
 ) {
 }

@@ -4,6 +4,7 @@ import com.VolunTrack.demo.ActivityRegistration.Domain.Model.Aggregates.Activity
 import com.VolunTrack.demo.ActivityRegistration.Domain.Model.Commands.CreateActivityCommand; // Importing the CreateActivityCommand
 import com.VolunTrack.demo.ActivityRegistration.Domain.Model.Commands.DeleteActivityCommand; // Importing the DeleteActivityCommand
 import com.VolunTrack.demo.ActivityRegistration.Domain.Model.Commands.UpdateActivityCommand; // Importing the UpdateActivityCommand
+import com.VolunTrack.demo.ActivityRegistration.Domain.Model.ValueObjects.ActivityImage; // Importing Value Object ActivityImage
 import com.VolunTrack.demo.ActivityRegistration.Domain.Repositories.IActivityRepository; // Importing the activity repository interface
 import com.VolunTrack.demo.ActivityRegistration.Domain.Services.IActivityService; // Importing the activity service interface
 import com.VolunTrack.demo.ActivityRegistration.Domain.Model.Queries.GetAllActivitiesQuery; // Importing the GetAllActivitiesQuery
@@ -14,6 +15,7 @@ import com.VolunTrack.demo.Notifications.Domain.Model.Enums.NotificationType; //
 import com.VolunTrack.demo.Notifications.Domain.Model.Enums.RecipientType; // Importing the recipient type enum
 import org.springframework.stereotype.Service; // Importing Spring's Service annotation
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -67,7 +69,8 @@ public class ActivityCommandService implements IActivityService {
                 command.cupos(),
                 command.ubicacion(),
                 command.estado(),
-                command.organizacionId()
+                command.organizacionId(),
+                command.imagenes()
         );
         
         // Save the new activity to the repository
@@ -110,6 +113,12 @@ public class ActivityCommandService implements IActivityService {
             activity.setUbicacion(command.ubicacion());
             activity.setEstado(command.estado());
             activity.setOrganizacion_id(command.organizacionId());
+
+            activity.getImagenes().clear();
+            if (command.imagenes() != null) {
+                command.imagenes().forEach(activity::addImagen);
+            }
+
             // Save the updated activity
             return activityRepository.save(activity);
         });

@@ -1,7 +1,12 @@
 package com.VolunTrack.demo.ActivityRegistration.Interfaces.REST.Transform;
 
 import com.VolunTrack.demo.ActivityRegistration.Domain.Model.Commands.CreateActivityCommand; // Importing CreateActivityCommand to convert the resource to command
+import com.VolunTrack.demo.ActivityRegistration.Domain.Model.ValueObjects.ActivityImage; // Importing the ActivityImage value object
 import com.VolunTrack.demo.ActivityRegistration.Interfaces.REST.Resources.CreateActivityResource; // Importing CreateActivityResource which will be converted to command
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * The CreateActivityCommandFromResourceAssembler class is responsible for converting a CreateActivityResource (which is a DTO) 
@@ -21,6 +26,12 @@ public class CreateActivityCommandFromResourceAssembler {
      */
     public static CreateActivityCommand toCommandFromResource(CreateActivityResource resource) {
         // Mapping the fields from the resource to the command
+        List<ActivityImage> activityImages = new ArrayList<>();
+        if (resource.imagenes() != null) {
+            activityImages = resource.imagenes().stream()
+                    .map(ActivityImage::new)
+                    .collect(Collectors.toList());
+        }
         return new CreateActivityCommand(
                 resource.fecha(), // The date of the activity
                 resource.horaInicio(), // The start time of the activity
@@ -32,7 +43,8 @@ public class CreateActivityCommandFromResourceAssembler {
                 resource.cupos(), // Number of available slots for the activity
                 resource.ubicacion(), // The location of the activity
                 resource.estado(), // The current status of the activity
-                resource.organizacionId() // The organization responsible for the activity
+                resource.organizacionId(), // The organization responsible for the activity
+                activityImages // The activity images for the activity
         );
     }
 }

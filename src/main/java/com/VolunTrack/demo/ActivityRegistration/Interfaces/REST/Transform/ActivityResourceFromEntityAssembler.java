@@ -1,7 +1,11 @@
 package com.VolunTrack.demo.ActivityRegistration.Interfaces.REST.Transform;
 
 import com.VolunTrack.demo.ActivityRegistration.Domain.Model.Aggregates.Activity; // Importing the Activity aggregate
+import com.VolunTrack.demo.ActivityRegistration.Domain.Model.ValueObjects.ActivityImage; // Importing the ActivityImage value object
 import com.VolunTrack.demo.ActivityRegistration.Interfaces.REST.Resources.ActivityResource; // Importing ActivityResource to return the resource
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * The ActivityResourceFromEntityAssembler class is responsible for converting an Activity entity
@@ -20,6 +24,10 @@ public class ActivityResourceFromEntityAssembler {
      */
     public static ActivityResource toResourceFromEntity(Activity entity) {
         // Mapping the fields from the entity to the resource
+        List<String> activityImages = entity.getImagenes()
+                .stream()
+                .map(ActivityImage::getImageUrl)
+                .collect(Collectors.toList());
         return new ActivityResource(
                 entity.getActividad_id(), // The unique identifier of the activity
                 entity.getFecha(), // The date of the activity
@@ -32,7 +40,8 @@ public class ActivityResourceFromEntityAssembler {
                 entity.getCupos(), // The number of available spots for the activity
                 entity.getUbicacion(), // The location of the activity
                 entity.getEstado(), // The current status of the activity
-                entity.getOrganizacion_id() // The ID of the organization responsible for the activity
+                entity.getOrganizacion_id(), // The ID of the organization responsible for the activity
+                activityImages // The activity images for the activity
         );
     }
 }

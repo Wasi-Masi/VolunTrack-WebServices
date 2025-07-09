@@ -1,7 +1,10 @@
 package com.VolunTrack.demo.ActivityRegistration.Domain.Model.Commands;
 
+import com.VolunTrack.demo.ActivityRegistration.Domain.Model.ValueObjects.ActivityImage;
+
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.List;
 
 /**
  * Represents a command to create a new activity.
@@ -63,6 +66,11 @@ public record CreateActivityCommand(
         /// <summary>
         /// The ID of the organization hosting the activity.
         /// </summary>
-        int organizacionId
+        int organizacionId,
+
+        /// <summary>
+        /// A list of image URLs associated with the activity.
+        /// </summary>
+        List<ActivityImage> imagenes
 ) {
 }
