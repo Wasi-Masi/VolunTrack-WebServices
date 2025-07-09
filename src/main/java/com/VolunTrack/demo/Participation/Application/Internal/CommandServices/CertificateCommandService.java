@@ -9,10 +9,11 @@ import com.VolunTrack.demo.Notifications.Domain.Model.Enums.NotificationType;
 import com.VolunTrack.demo.Notifications.Domain.Model.Enums.RecipientType;
 import com.VolunTrack.demo.ActivityRegistration.Domain.Repositories.IInscriptionRepository;
 import com.VolunTrack.demo.Participation.Domain.Repositories.IParticipationRepository;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
-
+import org.springframework.context.MessageSource;
 /**
  * Application Command Service for Certificate.
  * Handles the execution of commands related to Certificates, delegating to the domain service.
@@ -24,13 +25,14 @@ public class CertificateCommandService {
     private final INotificationCommandService notificationCommandService;
     private final IParticipationRepository participationRepository;
     private final IInscriptionRepository inscriptionRepository;
+    private final MessageSource messageSource;
 
-
-    public CertificateCommandService(ICertificateService certificateService, INotificationCommandService notificationCommandService, IParticipationRepository participationRepository, IInscriptionRepository inscriptionRepository) {
+    public CertificateCommandService(ICertificateService certificateService, INotificationCommandService notificationCommandService, IParticipationRepository participationRepository, IInscriptionRepository inscriptionRepository, MessageSource messageSource) {
         this.certificateService = certificateService;
         this.notificationCommandService = notificationCommandService;
         this.participationRepository = participationRepository;
         this.inscriptionRepository = inscriptionRepository;
+        this.messageSource = messageSource;
     }
 
     /**
@@ -61,7 +63,12 @@ public class CertificateCommandService {
                     });
                 });
             } catch (Exception e) {
-                System.err.println("Error creating certificate-ready notification for participation " + command.participationId() + ": " + e.getMessage());
+                String errorLog = messageSource.getMessage(
+                        "certificate.notificationErrorLog",
+                        new Object[]{command.participationId(), e.getMessage()},
+                        LocaleContextHolder.getLocale()
+                );
+                System.err.println(errorLog);
             }
         });
 

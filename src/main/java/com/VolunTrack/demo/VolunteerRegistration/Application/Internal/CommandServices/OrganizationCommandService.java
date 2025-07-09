@@ -7,18 +7,22 @@ import com.VolunTrack.demo.VolunteerRegistration.Domain.Model.Commands.UpdateOrg
 import com.VolunTrack.demo.VolunteerRegistration.Domain.Model.Queries.GetOrganizationQuery;
 import com.VolunTrack.demo.VolunteerRegistration.Domain.Repositories.IOrganizationRepository;
 import com.VolunTrack.demo.VolunteerRegistration.Domain.Services.IOrganizationService;
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
-
 @Service
 public class OrganizationCommandService implements IOrganizationService {
 
     private final IOrganizationRepository organizationRepository;
+    private final MessageSource messageSource;
 
-    public OrganizationCommandService(IOrganizationRepository organizationRepository) {
+    public OrganizationCommandService(IOrganizationRepository organizationRepository, MessageSource messageSource) {
         this.organizationRepository = organizationRepository;
+        this.messageSource = messageSource;
+
     }
 
     @Override
@@ -43,10 +47,14 @@ public class OrganizationCommandService implements IOrganizationService {
     public Optional<Organization> handle(UpdateOrganizationCommand command) {
         return organizationRepository.findById(command.organizationId()).map(organization -> {
             if (command.name() != null && !command.name().equals(organization.getName()) && organizationRepository.existsByName(command.name())) {
-                throw new IllegalArgumentException("Organization with name " + command.name() + " already exists.");
+                throw new IllegalArgumentException(
+                        messageSource.getMessage("organization.exists.name", new Object[]{command.name()}, LocaleContextHolder.getLocale())
+                );
             }
             if (command.email() != null && !command.email().equals(organization.getEmail()) && organizationRepository.existsByEmail(command.email())) {
-                throw new IllegalArgumentException("Organization with email " + command.email() + " already exists.");
+                throw new IllegalArgumentException(
+                        messageSource.getMessage("organization.exists.email", new Object[]{command.email()}, LocaleContextHolder.getLocale())
+                );
             }
 
             organization.setName(command.name());
@@ -60,7 +68,9 @@ public class OrganizationCommandService implements IOrganizationService {
     @Override
     public void handle(DeleteOrganizationCommand command) {
         if (!organizationRepository.existsById(command.organizationId())) {
-            throw new IllegalArgumentException("Organization with ID " + command.organizationId() + " not found.");
+            throw new IllegalArgumentException(
+                    messageSource.getMessage("organization.not.found", new Object[]{command.organizationId()}, LocaleContextHolder.getLocale())
+            );
         }
         organizationRepository.deleteById(command.organizationId());
     }
@@ -68,7 +78,9 @@ public class OrganizationCommandService implements IOrganizationService {
 
     @Override
     public Optional<Organization> handle(GetOrganizationQuery query) { // Única query para Organization
-        throw new UnsupportedOperationException("Query operations should be handled by OrganizationQueryService");
+        throw new UnsupportedOperationException(
+                messageSource.getMessage("organization.query.unsupported", null, LocaleContextHolder.getLocale())
+        );
     }
 
 

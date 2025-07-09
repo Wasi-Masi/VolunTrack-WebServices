@@ -1,5 +1,3 @@
-// src/main/java/com/VolunTrack/demo/IAM/Application/REST/resources/SignInResource.java
-
 package com.VolunTrack.demo.IAM.Application.REST.Resources;
 
 import jakarta.validation.constraints.NotBlank;
@@ -9,9 +7,10 @@ import lombok.Setter;
 @Getter
 @Setter
 public class SignInResource {
-    @NotBlank(message = "Username cannot be empty")
+
+    @NotBlank(message = "{NotBlank.username}")
     private String username;
 
-    @NotBlank(message = "Password cannot be empty")
+    @NotBlank(message = "{NotBlank.password}")
     private String password;
 }

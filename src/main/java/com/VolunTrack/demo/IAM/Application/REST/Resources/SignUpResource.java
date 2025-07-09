@@ -1,5 +1,3 @@
-// src/main/java/com/VolunTrack/demo/IAM/Application/REST/resources/SignUpResource.java
-
 package com.VolunTrack.demo.IAM.Application.REST.Resources;
 
 import jakarta.validation.constraints.Email;
@@ -11,30 +9,31 @@ import lombok.Setter;
 @Getter
 @Setter
 public class SignUpResource {
-    @NotBlank(message = "Username cannot be empty")
-    @Size(min = 3, max = 50, message = "Username must be between 3 and 50 characters")
+
+    @NotBlank(message = "{NotBlank.username}")
+    @Size(min = 3, max = 50, message = "{Size.username}")
     private String username;
 
-    @NotBlank(message = "Password cannot be empty")
-    @Size(min = 6, max = 100, message = "Password must be at least 6 characters long")
+    @NotBlank(message = "{NotBlank.password}")
+    @Size(min = 6, max = 100, message = "{Size.password}")
     private String password;
 
-    @NotBlank(message = "Email cannot be empty")
-    @Email(message = "Invalid email format")
+    @NotBlank(message = "{NotBlank.email}")
+    @Email(message = "{Email.email}")
     private String email;
 
-    @NotBlank(message = "Phone Number cannot be empty")
+    @NotBlank(message = "{NotBlank.phoneNumber}")
     private String phoneNumber;
 
-    @NotBlank(message = "Plan cannot be empty")
+    @NotBlank(message = "{NotBlank.plan}")
     private String plan;
 
-    @NotBlank(message = "Description cannot be empty")
+    @NotBlank(message = "{NotBlank.description}")
     private String description;
 
-    @NotBlank(message = "Profile Picture URL cannot be empty")
+    @NotBlank(message = "{NotBlank.profilePictureUrl}")
     private String profilePictureUrl;
 
-    @NotBlank(message = "Banner Picture URL cannot be empty")
+    @NotBlank(message = "{NotBlank.bannerPictureUrl}")
     private String bannerPictureUrl;
 }

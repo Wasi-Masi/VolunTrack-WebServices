@@ -22,6 +22,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -34,6 +36,7 @@ public class AuthenticationController {
     private final AuthenticationManager authenticationManager;
     private final UserDetailsService userDetailsService;
     private final OrganizationCommandService organizationCommandService;
+    private final MessageSource messageSource;
 
 
     public AuthenticationController(UserRepository userRepository,
@@ -41,24 +44,29 @@ public class AuthenticationController {
                                     JwtService jwtService,
                                     AuthenticationManager authenticationManager,
                                     UserDetailsService userDetailsService,
-                                    OrganizationCommandService organizationCommandService) {
+                                    OrganizationCommandService organizationCommandService,
+                                    MessageSource messageSource) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
         this.authenticationManager = authenticationManager;
         this.userDetailsService = userDetailsService;
         this.organizationCommandService = organizationCommandService;
+        this.messageSource = messageSource;
     }
 
     @Operation(summary = "Register a user", description = "Creates a new user in the system.")
     @PostMapping("/sign-up")
     public ResponseEntity<?> signUp(@Valid @RequestBody SignUpResource signUpResource) {
         if (userRepository.existsByUsername(signUpResource.getUsername())) {
-            return new ResponseEntity<>("Username is already taken!", HttpStatus.BAD_REQUEST);
+            String message = messageSource.getMessage("auth.usernameTaken", null, LocaleContextHolder.getLocale());
+            return new ResponseEntity<>(message, HttpStatus.BAD_REQUEST);
         }
         if (userRepository.existsByEmail(signUpResource.getEmail())) {
-            return new ResponseEntity<>("Email is already in use!", HttpStatus.BAD_REQUEST);
+            String message = messageSource.getMessage("auth.emailTaken", null, LocaleContextHolder.getLocale());
+            return new ResponseEntity<>(message, HttpStatus.BAD_REQUEST);
         }
+
 
         User user = new User();
         user.setUsername(signUpResource.getUsername());
@@ -80,23 +88,32 @@ public class AuthenticationController {
             );
 
             Organization createdOrganization = organizationCommandService.handle(createOrganizationCommand)
-                    .orElseThrow(() -> new IllegalStateException("Organization could not be created for user: " + signUpResource.getUsername()));
-
+                    .orElseThrow(() -> new IllegalStateException(
+                            messageSource.getMessage("auth.orgCreationFailedState", new Object[]{signUpResource.getUsername()}, LocaleContextHolder.getLocale())
+                    ));
             user.setOrganizationId(createdOrganization.getId());
             userRepository.save(user);
 
-            System.out.println("Organization created successfully for user: " + signUpResource.getUsername() + " with ID: " + createdOrganization.getId());
+            String successLog = messageSource.getMessage("auth.orgCreationSuccessLog",
+                    new Object[]{signUpResource.getUsername(), createdOrganization.getId()}, LocaleContextHolder.getLocale());
+            System.out.println(successLog);
 
         } catch (IllegalArgumentException e) {
-            System.err.println("Error creating organization for user " + signUpResource.getUsername() + ": " + e.getMessage());
+            String errorLog = messageSource.getMessage(
+                    "auth.orgCreationErrorLog", new Object[]{signUpResource.getUsername(), e.getMessage()}, LocaleContextHolder.getLocale());
+            System.err.println(errorLog);
             if (user.getId() != null) {
                 userRepository.delete(user);
             }
-            return new ResponseEntity<>("Failed to create organization: " + e.getMessage(), HttpStatus.BAD_REQUEST);
+            String message = messageSource.getMessage("auth.orgCreationFailed", new Object[]{e.getMessage()}, LocaleContextHolder.getLocale());
+            return new ResponseEntity<>(message, HttpStatus.BAD_REQUEST);
         } catch (Exception e) {
-            System.err.println("Unexpected error during organization creation for user " + signUpResource.getUsername() + ": " + e.getMessage());
+            String unexpectedLog = messageSource.getMessage(
+                    "auth.orgCreationUnexpectedLog", new Object[]{signUpResource.getUsername(), e.getMessage()}, LocaleContextHolder.getLocale());
+            System.err.println(unexpectedLog);
 
-            return new ResponseEntity<>("Failed to create organization due to an unexpected error: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+            String message = messageSource.getMessage("auth.orgCreationUnexpected", new Object[]{e.getMessage()}, LocaleContextHolder.getLocale());
+            return new ResponseEntity<>(message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
         UserDetails userDetails = userDetailsService.loadUserByUsername(user.getUsername());
@@ -123,7 +140,8 @@ public class AuthenticationController {
 
         } catch (Exception e) {
             e.printStackTrace();
-            return new ResponseEntity<>("Invalid username or password!", HttpStatus.UNAUTHORIZED);
+            String message = messageSource.getMessage("auth.invalidCredentials", null, LocaleContextHolder.getLocale());
+            return new ResponseEntity<>(message, HttpStatus.UNAUTHORIZED);
         }
     }
 }
