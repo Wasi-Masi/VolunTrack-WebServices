@@ -108,6 +108,11 @@ public class Volunteer {
     @Column(name = "profession", length = 100)
     private String profession;
 
+    // --- NUEVO CAMPO: organizationId ---
+    @Column(name = "organization_id", nullable = false)
+    private Long organizationId;
+    // --- FIN NUEVO CAMPO ---
+
     /**
      * The set of {@link OrgVolunteer} entities representing the many-to-many relationship
      * between this Volunteer and its associated Organizations.
@@ -129,8 +134,9 @@ public class Volunteer {
      * @param email The email address of the volunteer.
      * @param phoneNumber The phone number of the volunteer.
      * @param address The address of the volunteer.
+     * @param organizationId The ID of the organization this volunteer belongs to.
      */
-    public Volunteer(String firstName, String lastName, String dni, LocalDate dateOfBirth, String email, String phoneNumber, String address) {
+    public Volunteer(String firstName, String lastName, String dni, LocalDate dateOfBirth, String email, String phoneNumber, String address, Long organizationId) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.dni = dni;
@@ -140,7 +146,8 @@ public class Volunteer {
         this.address = address;
         this.registrationDate = LocalDate.now();
         this.status = VolunteerStatus.ACTIVE;
-        this.profession = null;
+        this.profession = null; // Default to null, can be set by a more specific constructor
+        this.organizationId = organizationId; // Set the organizationId
     }
 
     /**
@@ -155,10 +162,12 @@ public class Volunteer {
      * @param phoneNumber The phone number of the volunteer.
      * @param address The address of the volunteer.
      * @param profession The profession of the volunteer.
+     * @param organizationId The ID of the organization this volunteer belongs to.
      */
     public Volunteer(String firstName, String lastName, String dni, LocalDate dateOfBirth, String email,
-                     String phoneNumber, String address, String profession) {
-        this(firstName, lastName, dni, dateOfBirth, email, phoneNumber, address);
+                     String phoneNumber, String address, String profession, Long organizationId) {
+        // Llama al constructor base y luego establece la profesión y organizationId
+        this(firstName, lastName, dni, dateOfBirth, email, phoneNumber, address, organizationId);
         this.profession = profession;
     }
 

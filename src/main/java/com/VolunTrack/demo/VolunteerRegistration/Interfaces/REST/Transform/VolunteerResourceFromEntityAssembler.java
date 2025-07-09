@@ -29,7 +29,10 @@ public class VolunteerResourceFromEntityAssembler {
                 entity.getRegistrationDate(),
                 entity.getStatus().name(),
                 entity.getAddress(),
-                entity.getProfession()
+                entity.getProfession(),
+                // --- ¡AQUÍ ESTÁ EL CAMBIO! ---
+                entity.getOrganizationId() // Pasa el organizationId desde la entidad
+                // --- FIN DEL CAMBIO ---
         );
     }
 }

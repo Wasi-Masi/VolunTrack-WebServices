@@ -1,5 +1,3 @@
-// src/main/java/com/VolunTrack/demo/IAM/Infrastructure/Tokens/Jwt/JwtService.java
-
 package com.VolunTrack.demo.IAM.Infrastructure.Tokens.JWT;
 
 import io.jsonwebtoken.Claims;
@@ -13,7 +11,6 @@ import org.springframework.stereotype.Service;
 import java.security.Key;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
@@ -28,6 +25,7 @@ public class JwtService implements TokenService {
     @Value("${security.jwt.expiration-in-ms}")
     private long expirationInMs;
 
+    @Override
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
     }
@@ -37,11 +35,13 @@ public class JwtService implements TokenService {
         return claimsResolver.apply(claims);
     }
 
+    @Override
     public String generateToken(UserDetails userDetails) {
-        return generateToken(new HashMap<>(), userDetails);
+        return generateToken(userDetails, new HashMap<>());
     }
 
-    public String generateToken(Map<String, Object> extraClaims, UserDetails userDetails) {
+    @Override
+    public String generateToken(UserDetails userDetails, Map<String, Object> extraClaims) {
         return Jwts
                 .builder()
                 .claims(extraClaims)
@@ -57,24 +57,12 @@ public class JwtService implements TokenService {
         return (username.equals(userDetails.getUsername())) && !isTokenExpired(token);
     }
 
-
-
     @Override
     public boolean validateToken(String token) {
-
         return !isTokenExpired(token);
     }
 
-    @Override
-    public String generateToken(String username) {
 
-        return generateToken(new org.springframework.security.core.userdetails.User(username, "", List.of()));
-    }
-
-    @Override
-    public String generateToken(String username, Map<String, Object> extraClaims) {
-        return generateToken(extraClaims, new org.springframework.security.core.userdetails.User(username, "", List.of()));
-    }
 
 
     private boolean isTokenExpired(String token) {

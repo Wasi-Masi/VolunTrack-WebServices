@@ -1,4 +1,3 @@
-// src/main/java/com/VolunTrack/demo/IAM/Application/REST/UserController.java
 package com.VolunTrack.demo.IAM.Application.REST;
 
 import com.VolunTrack.demo.IAM.Application.REST.Resources.UpdateUserResource;
@@ -8,7 +7,6 @@ import com.VolunTrack.demo.IAM.Infrastructure.Repositories.UserRepository;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
@@ -32,7 +30,7 @@ public class UserController {
     @GetMapping("/me")
     public ResponseEntity<UserResource> getCurrentUserProfile() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String username = authentication.getName(); // Obtiene el username del usuario autenticado
+        String username = authentication.getName();
 
         Optional<User> userOptional = userRepository.findByUsername(username);
 
@@ -47,6 +45,8 @@ public class UserController {
             userResource.setDescription(user.getDescription());
             userResource.setProfilePictureUrl(user.getProfilePictureUrl());
             userResource.setBannerPictureUrl(user.getBannerPictureUrl());
+            userResource.setOrganizationId(user.getOrganizationId());
+            // ------------------------------------------
 
             return ResponseEntity.ok(userResource);
         } else {
@@ -68,8 +68,10 @@ public class UserController {
             User userToUpdate = userOptional.get();
 
             if (!userToUpdate.getUsername().equals(authenticatedUsername)) {
-                return ResponseEntity.status(403).build();
+                return ResponseEntity.status(403).build(); // Prohibido
             }
+
+
 
             userToUpdate.setUsername(resource.getUsername());
             userToUpdate.setEmail(resource.getEmail());
@@ -78,6 +80,7 @@ public class UserController {
             userToUpdate.setDescription(resource.getDescription());
             userToUpdate.setProfilePictureUrl(resource.getProfilePictureUrl());
             userToUpdate.setBannerPictureUrl(resource.getBannerPictureUrl());
+
 
             User updatedUser = userRepository.save(userToUpdate);
 
@@ -90,6 +93,8 @@ public class UserController {
             userResource.setDescription(updatedUser.getDescription());
             userResource.setProfilePictureUrl(updatedUser.getProfilePictureUrl());
             userResource.setBannerPictureUrl(updatedUser.getBannerPictureUrl());
+            userResource.setOrganizationId(updatedUser.getOrganizationId());
+            // ----------------------------------------------------------------------------------
 
             return ResponseEntity.ok(userResource);
         } else {

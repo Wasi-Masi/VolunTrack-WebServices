@@ -17,6 +17,9 @@ public record VolunteerResource(
         LocalDate registrationDate,
         String status,
         String address,
-        String profession
+        String profession,
+        // --- ¡NUEVO CAMPO! ---
+        Long organizationId // Añade esta línea
+        // --- FIN NUEVO CAMPO ---
 ) {
 }

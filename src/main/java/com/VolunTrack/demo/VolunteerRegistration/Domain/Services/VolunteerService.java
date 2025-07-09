@@ -68,8 +68,11 @@ public class VolunteerService implements IVolunteerService {
             return Optional.empty();
         }
 
+        // --- ¡AQUÍ ESTÁ EL CAMBIO CLAVE! ---
+        // Ahora usamos el constructor que incluye el organizationId
+        Volunteer volunteer = new Volunteer(firstName, lastName, dni, dateOfBirth, email, phoneNumber, address, profession, organizationId);
+        // --- FIN DEL CAMBIO CLAVE ---
 
-        Volunteer volunteer = new Volunteer(firstName, lastName, dni, dateOfBirth, email, phoneNumber, address, profession);
 
         Volunteer savedVolunteer = volunteerRepository.save(volunteer);
 
@@ -77,6 +80,7 @@ public class VolunteerService implements IVolunteerService {
 
         if (association.isEmpty()) {
             System.out.println("Error: Failed to associate volunteer with organization after creation, or association already exists.");
+            // Considerar rollback si la asociación es obligatoria para el modelo
             return Optional.empty();
         }
 

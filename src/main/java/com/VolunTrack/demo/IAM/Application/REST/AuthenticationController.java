@@ -5,10 +5,11 @@ import com.VolunTrack.demo.IAM.Application.REST.Resources.SignInResource;
 import com.VolunTrack.demo.IAM.Application.REST.Resources.SignUpResource;
 import com.VolunTrack.demo.IAM.Domain.Model.Aggregates.User;
 import com.VolunTrack.demo.IAM.Infrastructure.Repositories.UserRepository;
-import com.VolunTrack.demo.IAM.Infrastructure.Tokens.JWT.JwtService;
 
+import com.VolunTrack.demo.IAM.Infrastructure.Tokens.JWT.JwtService;
 import com.VolunTrack.demo.VolunteerRegistration.Application.Internal.CommandServices.OrganizationCommandService;
-import com.VolunTrack.demo.VolunteerRegistration.Domain.Model.Commands.CreateOrganizationCommand; // Necesitarás este comando
+import com.VolunTrack.demo.VolunteerRegistration.Domain.Model.Commands.CreateOrganizationCommand;
+import com.VolunTrack.demo.VolunteerRegistration.Domain.Model.Aggregates.Organization;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -33,6 +34,7 @@ public class AuthenticationController {
     private final AuthenticationManager authenticationManager;
     private final UserDetailsService userDetailsService;
     private final OrganizationCommandService organizationCommandService;
+
 
     public AuthenticationController(UserRepository userRepository,
                                     PasswordEncoder passwordEncoder,
@@ -68,28 +70,39 @@ public class AuthenticationController {
         user.setProfilePictureUrl(signUpResource.getProfilePictureUrl());
         user.setBannerPictureUrl(signUpResource.getBannerPictureUrl());
 
-        userRepository.save(user);
 
         try {
             CreateOrganizationCommand createOrganizationCommand = new CreateOrganizationCommand(
-                    signUpResource.getUsername(),     // Nombre de la organización
-                    signUpResource.getDescription(),  // Descripción de la organización
-                    signUpResource.getEmail(),        // Email de la organización
-                    signUpResource.getPlan()          // Plan de la organización
+                    signUpResource.getUsername(),
+                    signUpResource.getDescription(),
+                    signUpResource.getEmail(),
+                    signUpResource.getPlan()
             );
-            organizationCommandService.handle(createOrganizationCommand);
-            System.out.println("Organization created successfully for user: " + signUpResource.getUsername());
+
+            Organization createdOrganization = organizationCommandService.handle(createOrganizationCommand)
+                    .orElseThrow(() -> new IllegalStateException("Organization could not be created for user: " + signUpResource.getUsername()));
+
+            user.setOrganizationId(createdOrganization.getId());
+            userRepository.save(user);
+
+            System.out.println("Organization created successfully for user: " + signUpResource.getUsername() + " with ID: " + createdOrganization.getId());
 
         } catch (IllegalArgumentException e) {
             System.err.println("Error creating organization for user " + signUpResource.getUsername() + ": " + e.getMessage());
-            userRepository.delete(user);
+            if (user.getId() != null) {
+                userRepository.delete(user);
+            }
             return new ResponseEntity<>("Failed to create organization: " + e.getMessage(), HttpStatus.BAD_REQUEST);
+        } catch (Exception e) {
+            System.err.println("Unexpected error during organization creation for user " + signUpResource.getUsername() + ": " + e.getMessage());
+
+            return new ResponseEntity<>("Failed to create organization due to an unexpected error: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
         UserDetails userDetails = userDetailsService.loadUserByUsername(user.getUsername());
         String jwt = jwtService.generateToken(userDetails);
 
-        return ResponseEntity.ok(new AuthenticationResponseResource(jwt));
+        return ResponseEntity.ok(new AuthenticationResponseResource(jwt, user.getOrganizationId()));
     }
 
 
@@ -102,12 +115,14 @@ public class AuthenticationController {
             );
 
             UserDetails userDetails = userDetailsService.loadUserByUsername(signInResource.getUsername());
+            User authenticatedUser = (User) userDetails;
 
             String jwt = jwtService.generateToken(userDetails);
 
-            return ResponseEntity.ok(new AuthenticationResponseResource(jwt));
+            return ResponseEntity.ok(new AuthenticationResponseResource(jwt, authenticatedUser.getOrganizationId()));
 
         } catch (Exception e) {
+            e.printStackTrace();
             return new ResponseEntity<>("Invalid username or password!", HttpStatus.UNAUTHORIZED);
         }
     }
