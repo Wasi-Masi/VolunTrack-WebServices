@@ -1,4 +1,4 @@
-package com.VolunTrack.demo.config;
+package com.VolunTrack.demo.Config;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
