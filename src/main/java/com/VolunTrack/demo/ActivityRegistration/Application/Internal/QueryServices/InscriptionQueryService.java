@@ -10,6 +10,8 @@ import com.VolunTrack.demo.ActivityRegistration.Domain.Model.Queries.GetInscript
 import com.VolunTrack.demo.ActivityRegistration.Domain.Repositories.IInscriptionRepository; // Importing the Inscription repository interface
 import com.VolunTrack.demo.ActivityRegistration.Domain.Services.IInscriptionService; // Importing the Inscription service interface
 import org.springframework.stereotype.Service; // Spring's annotation for marking this class as a service
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
 
 import java.util.List;
 import java.util.Optional;
@@ -24,15 +26,19 @@ import java.util.Optional;
 public class InscriptionQueryService implements IInscriptionService {
 
     private final IInscriptionRepository inscriptionRepository; // Repository to interact with inscription data
+    private final MessageSource messageSource;
 
     /**
      * Constructor to inject the inscription repository dependency.
      *
      * @param inscriptionRepository - The repository for managing inscription data.
      */
-    public InscriptionQueryService(IInscriptionRepository inscriptionRepository) {
+    public InscriptionQueryService(IInscriptionRepository inscriptionRepository,
+                                   MessageSource messageSource) {
         this.inscriptionRepository = inscriptionRepository;
+        this.messageSource = messageSource;
     }
+
 
     /**
      * Handles the retrieval of all inscriptions from the repository.
@@ -79,7 +85,8 @@ public class InscriptionQueryService implements IInscriptionService {
      */
     @Override
     public Optional<Inscription> handle(CreateInscriptionCommand command) {
-        throw new UnsupportedOperationException("Command operations should be handled by InscriptionCommandService");
+        String msg = messageSource.getMessage("inscription.command.unsupported.create", null, LocaleContextHolder.getLocale());
+        throw new UnsupportedOperationException(msg);
     }
 
     /**
@@ -91,7 +98,8 @@ public class InscriptionQueryService implements IInscriptionService {
      */
     @Override
     public Optional<Inscription> handle(UpdateInscriptionCommand command) {
-        throw new UnsupportedOperationException("Command operations should be handled by InscriptionCommandService");
+        String msg = messageSource.getMessage("inscription.command.unsupported.update", null, LocaleContextHolder.getLocale());
+        throw new UnsupportedOperationException(msg);
     }
 
     /**
@@ -103,6 +111,7 @@ public class InscriptionQueryService implements IInscriptionService {
      */
     @Override
     public void handle(DeleteInscriptionCommand command) {
-        throw new UnsupportedOperationException("Command operations should be handled by InscriptionCommandService");
+        String msg = messageSource.getMessage("inscription.command.unsupported.delete", null, LocaleContextHolder.getLocale());
+        throw new UnsupportedOperationException(msg);
     }
 }

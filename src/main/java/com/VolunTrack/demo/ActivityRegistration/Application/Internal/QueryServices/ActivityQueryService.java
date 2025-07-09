@@ -9,6 +9,8 @@ import com.VolunTrack.demo.ActivityRegistration.Domain.Model.Queries.GetActivity
 import com.VolunTrack.demo.ActivityRegistration.Domain.Repositories.IActivityRepository; // Importing the Activity repository interface
 import com.VolunTrack.demo.ActivityRegistration.Domain.Services.IActivityService; // Importing the Activity service interface
 import org.springframework.stereotype.Service; // Spring's annotation for marking this class as a service
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
 
 import java.util.List;
 import java.util.Optional;
@@ -22,15 +24,19 @@ import java.util.Optional;
 public class ActivityQueryService implements IActivityService { // Implements IActivityService
 
     private final IActivityRepository activityRepository; // Repository to interact with activity data
+    private final MessageSource messageSource;
 
     /**
      * Constructor to inject the activity repository dependency.
      *
      * @param activityRepository - The repository for managing activity data.
      */
-    public ActivityQueryService(IActivityRepository activityRepository) {
+    public ActivityQueryService(IActivityRepository activityRepository,
+                                MessageSource messageSource) {
         this.activityRepository = activityRepository;
+        this.messageSource = messageSource;
     }
+
 
     /**
      * Handles the retrieval of all activities from the repository.
@@ -65,7 +71,8 @@ public class ActivityQueryService implements IActivityService { // Implements IA
      */
     @Override
     public Optional<Activity> handle(CreateActivityCommand command) {
-        throw new UnsupportedOperationException("Command operations should be handled by ActivityCommandService");
+        String msg = messageSource.getMessage("activity.command.unsupported.create", null, LocaleContextHolder.getLocale());
+        throw new UnsupportedOperationException(msg);
     }
 
     /**
@@ -77,7 +84,8 @@ public class ActivityQueryService implements IActivityService { // Implements IA
      */
     @Override
     public Optional<Activity> handle(UpdateActivityCommand command) {
-        throw new UnsupportedOperationException("Command operations should be handled by ActivityCommandService");
+        String msg = messageSource.getMessage("activity.command.unsupported.update", null, LocaleContextHolder.getLocale());
+        throw new UnsupportedOperationException(msg);
     }
 
     /**
@@ -89,6 +97,7 @@ public class ActivityQueryService implements IActivityService { // Implements IA
      */
     @Override
     public void handle(DeleteActivityCommand command) {
-        throw new UnsupportedOperationException("Command operations should be handled by ActivityCommandService");
+        String msg = messageSource.getMessage("activity.command.unsupported.delete", null, LocaleContextHolder.getLocale());
+        throw new UnsupportedOperationException(msg);
     }
 }

@@ -16,6 +16,8 @@ import com.VolunTrack.demo.Notifications.Domain.Services.INotificationCommandSer
 import com.VolunTrack.demo.Notifications.Domain.Model.Commands.CreateNotificationCommand; // Importing the CreateNotificationCommand
 import com.VolunTrack.demo.Notifications.Domain.Model.Enums.NotificationType; // Importing the NotificationType enum
 import com.VolunTrack.demo.Notifications.Domain.Model.Enums.RecipientType; // Importing the RecipientType enum
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Service; // Spring annotation for marking this as a service
 import org.springframework.transaction.annotation.Transactional; // Annotation for handling transactions
 
@@ -34,6 +36,7 @@ public class InscriptionCommandService implements IInscriptionService {
     private final IVolunteerRepository volunteerRepository; // Repository to manage volunteers
     private final IActivityRepository activityRepository; // Repository to manage activities
     private final INotificationCommandService notificationCommandService; // Service to handle notifications
+    private final MessageSource messageSource;
 
     /**
      * Constructor to inject dependencies for repositories and notification service.
@@ -46,11 +49,13 @@ public class InscriptionCommandService implements IInscriptionService {
     public InscriptionCommandService(IInscriptionRepository inscriptionRepository,
                                      IVolunteerRepository volunteerRepository,
                                      IActivityRepository activityRepository,
-                                     INotificationCommandService notificationCommandService) {
+                                     INotificationCommandService notificationCommandService,
+                                     MessageSource messageSource) {
         this.inscriptionRepository = inscriptionRepository;
         this.volunteerRepository = volunteerRepository;
         this.activityRepository = activityRepository;
         this.notificationCommandService = notificationCommandService;
+        this.messageSource = messageSource;
     }
 
     /**
@@ -67,21 +72,26 @@ public class InscriptionCommandService implements IInscriptionService {
 
         // Check if the volunteer exists
         if (!volunteerRepository.existsById(command.voluntarioId())) {
-            throw new IllegalArgumentException("Volunteer with ID " + command.voluntarioId() + " does not exist.");
+            String msg = messageSource.getMessage("volunteer.not.found.by.id", new Object[]{command.voluntarioId()}, LocaleContextHolder.getLocale());
+            throw new IllegalArgumentException(msg);
         }
 
         // Check if the activity exists
         Activity activity = activityRepository.findById(command.actividadId())
-                .orElseThrow(() -> new IllegalArgumentException("Activity with ID " + command.actividadId() + " does not exist."));
+                .orElseThrow(() -> new IllegalArgumentException(
+                        messageSource.getMessage("inscription.activity.not.found", new Object[]{command.actividadId()}, LocaleContextHolder.getLocale())
+                ));
 
         // Check if the volunteer is already enrolled in the activity
         if (inscriptionRepository.findByVoluntarioIdAndActividadId(command.voluntarioId(), command.actividadId()).isPresent()) {
-            throw new IllegalArgumentException("Volunteer " + command.voluntarioId() + " is already enrolled in activity " + command.actividadId());
+            String msg = messageSource.getMessage("volunteer.already.enrolled", new Object[]{command.voluntarioId(), command.actividadId()}, LocaleContextHolder.getLocale());
+            throw new IllegalArgumentException(msg);
         }
 
         // Check if there are available slots in the activity
         if (!activity.tryIncrementInscriptionsActuales()) {
-            throw new IllegalStateException("No available slots for activity with ID " + command.actividadId());
+            String msg = messageSource.getMessage("inscription.slots.full", new Object[]{command.actividadId()}, LocaleContextHolder.getLocale());
+            throw new IllegalStateException(msg);
         }
 
         // Create a new inscription
@@ -105,7 +115,8 @@ public class InscriptionCommandService implements IInscriptionService {
             );
             notificationCommandService.handle(volunteerNotification);
         } catch (Exception e) {
-            System.err.println("Error creating joined-activity notification for volunteer " + savedInscription.getVoluntarioId() + ": " + e.getMessage());
+            String msg = messageSource.getMessage("notification.inscription.volunteer.error", new Object[]{savedInscription.getVoluntarioId(), e.getMessage()}, LocaleContextHolder.getLocale());
+            System.err.println(msg);
         }
 
         // Send notification to the organization
@@ -117,7 +128,8 @@ public class InscriptionCommandService implements IInscriptionService {
             );
             notificationCommandService.handle(organizationNotification);
         } catch (Exception e) {
-            System.err.println("Error creating volunteer-joined notification for organization " + activity.getOrganizacion_id() + ": " + e.getMessage());
+            String msg = messageSource.getMessage("notification.inscription.organization.error", new Object[]{activity.getOrganizacion_id(), e.getMessage()}, LocaleContextHolder.getLocale());
+            System.err.println(msg);
         }
 
         return Optional.of(savedInscription);
@@ -154,11 +166,15 @@ public class InscriptionCommandService implements IInscriptionService {
     public void handle(DeleteInscriptionCommand command) {
         // Check if the inscription exists
         Inscription inscriptionToDelete = inscriptionRepository.findById(command.inscriptionId())
-                .orElseThrow(() -> new IllegalArgumentException("Enrollment with ID " + command.inscriptionId() + " not found."));
+                .orElseThrow(() -> new IllegalArgumentException(
+                        messageSource.getMessage("inscription.not.found.by.id", new Object[]{command.inscriptionId()}, LocaleContextHolder.getLocale())
+                ));
 
         // Retrieve the associated activity
         Activity activity = activityRepository.findById(inscriptionToDelete.getActividadId())
-                .orElseThrow(() -> new IllegalStateException("Associated activity not found for inscription ID " + inscriptionToDelete.getInscription_id()));
+                .orElseThrow(() -> new IllegalStateException(
+                        messageSource.getMessage("inscription.activity.association.not.found", new Object[]{inscriptionToDelete.getInscription_id()}, LocaleContextHolder.getLocale())
+                ));
 
         // Decrement the current number of inscriptions in the activity
         activity.tryDecrementInscriptionsActuales();
@@ -177,7 +193,9 @@ public class InscriptionCommandService implements IInscriptionService {
      */
     @Override
     public List<Inscription> handle(GetAllInscriptionsQuery query) {
-        throw new UnsupportedOperationException("Query operations should be handled by InscriptionQueryService");
+        throw new UnsupportedOperationException(
+                messageSource.getMessage("inscription.query.unsupported.all", null, LocaleContextHolder.getLocale())
+        );
     }
 
     /**
@@ -189,7 +207,9 @@ public class InscriptionCommandService implements IInscriptionService {
      */
     @Override
     public Optional<Inscription> handle(GetInscriptionByIdQuery query) {
-        throw new UnsupportedOperationException("Query operations should be handled by InscriptionQueryService");
+        throw new UnsupportedOperationException(
+                messageSource.getMessage("inscription.query.unsupported.byId", null, LocaleContextHolder.getLocale())
+        );
     }
 
     /**
@@ -201,6 +221,8 @@ public class InscriptionCommandService implements IInscriptionService {
      */
     @Override
     public List<Inscription> handle(GetInscriptionsByActivityIdQuery query) {
-        throw new UnsupportedOperationException("Query operations should be handled by InscriptionQueryService");
+        throw new UnsupportedOperationException(
+                messageSource.getMessage("inscription.query.unsupported.byActivityId", null, LocaleContextHolder.getLocale())
+        );
     }
 }
