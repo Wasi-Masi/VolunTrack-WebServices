@@ -18,7 +18,8 @@ public record ActivityResource(
         String descripcion, // A description of the activity
         String instrucciones, // Any instructions related to the activity
         String proposito, // The purpose of the activity
-        int cupos, // The number of available spots for the activity
+        int cupos, // The number of total available spots for the activity
+        int availableSlots, // NUEVO: The number of currently available slots
         String ubicacion, // The location where the activity takes place
         String estado, // The current status of the activity (e.g., "active", "completed")
         int organizacionId, // The ID of the organization that is organizing the activity

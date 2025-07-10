@@ -8,6 +8,7 @@ import com.VolunTrack.demo.ActivityRegistration.Domain.Model.Queries.GetInscript
 import com.VolunTrack.demo.ActivityRegistration.Domain.Model.Queries.GetInscriptionsByActivityIdQuery; // Importing GetInscriptionsByActivityIdQuery
 import com.VolunTrack.demo.ActivityRegistration.Interfaces.REST.Resources.CreateInscriptionResource; // Importing CreateInscriptionResource
 import com.VolunTrack.demo.ActivityRegistration.Interfaces.REST.Resources.InscriptionResource; // Importing InscriptionResource for the response body
+import com.VolunTrack.demo.ActivityRegistration.Interfaces.REST.Resources.RegisteredVolunteerResource;
 import com.VolunTrack.demo.ActivityRegistration.Interfaces.REST.Resources.UpdateInscriptionResource; // Importing UpdateInscriptionResource
 import com.VolunTrack.demo.ActivityRegistration.Interfaces.REST.Transform.CreateInscriptionCommandFromResourceAssembler; // For converting CreateInscriptionResource to command
 import com.VolunTrack.demo.ActivityRegistration.Interfaces.REST.Transform.InscriptionResourceFromEntityAssembler; // For converting Inscription entities to resources
@@ -18,6 +19,7 @@ import org.springframework.http.HttpStatus; // For HTTP status codes
 import org.springframework.http.MediaType; // For specifying media type in the response
 import org.springframework.http.ResponseEntity; // For creating response entities
 import org.springframework.web.bind.annotation.*; // For REST controller annotations
+import com.VolunTrack.demo.VolunteerRegistration.Domain.Repositories.IVolunteerRepository;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -34,6 +36,7 @@ public class InscriptionController {
 
     private final InscriptionCommandService inscriptionCommandService; // Injected Command Service for handling commands related to inscriptions
     private final InscriptionQueryService inscriptionQueryService;   // Injected Query Service for handling queries related to inscriptions
+    private final IVolunteerRepository volunteerRepository;
 
     /**
      * Constructor to inject the required command and query services.
@@ -41,9 +44,12 @@ public class InscriptionController {
      * @param inscriptionCommandService - The service for handling commands related to inscriptions.
      * @param inscriptionQueryService - The service for handling queries related to inscriptions.
      */
-    public InscriptionController(InscriptionCommandService inscriptionCommandService, InscriptionQueryService inscriptionQueryService) {
+    public InscriptionController(InscriptionCommandService inscriptionCommandService,
+                                 InscriptionQueryService inscriptionQueryService,
+                                 IVolunteerRepository volunteerRepository) {
         this.inscriptionCommandService = inscriptionCommandService;
         this.inscriptionQueryService = inscriptionQueryService;
+        this.volunteerRepository = volunteerRepository;
     }
 
     /**
@@ -161,4 +167,41 @@ public class InscriptionController {
                     .build();
         }
     }
+
+    @Operation(summary = "Get registered volunteers for an activity", description = "Returns all volunteer info for those registered in a specific activity")
+    @GetMapping("/volunteers/byActivity/{activityId}")
+    public ResponseEntity<List<RegisteredVolunteerResource>> getRegisteredVolunteersForActivity(@PathVariable Long activityId) {
+        var inscriptions = inscriptionQueryService.handle(new GetInscriptionsByActivityIdQuery(activityId));
+
+        // Aquí obtenemos los datos del voluntario usando una repository (ej. VolunteerRepository)
+        var volunteers = inscriptions.stream()
+                .map(inscription -> {
+                    var volunteer = volunteerRepository.findById(inscription.getVoluntarioId())
+                            .orElse(null);
+                    if (volunteer == null) return null;
+                    return new RegisteredVolunteerResource(
+                            volunteer.getId(),
+                            volunteer.getFirstName(),
+                            volunteer.getLastName(),
+                            volunteer.getEmail(),
+                            volunteer.getPhoneNumber(),
+                            volunteer.getDateOfBirth(),            // 👈 NUEVO
+                            volunteer.getProfession(),
+                            volunteer.getRegistrationDate(),
+                            volunteer.getStatus().toString(),
+                            inscription.getInscription_id(), // 👈 NUEVO
+
+
+                            inscription.getFecha(),
+                            inscription.getEstado().toString()
+                    );
+
+                })
+                .filter(v -> v != null)
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(volunteers);
+    }
+
+
 }
