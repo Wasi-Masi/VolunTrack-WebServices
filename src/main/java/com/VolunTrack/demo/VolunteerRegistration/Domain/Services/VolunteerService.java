@@ -8,13 +8,14 @@ import com.VolunTrack.demo.VolunteerRegistration.Domain.Model.Aggregates.Volunte
 import com.VolunTrack.demo.VolunteerRegistration.Domain.Model.Aggregates.VolunteerStatus;
 import com.VolunTrack.demo.VolunteerRegistration.Domain.Repositories.IOrganizationRepository;
 import com.VolunTrack.demo.VolunteerRegistration.Domain.Repositories.IVolunteerRepository;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
-
+import org.springframework.context.MessageSource;
 /**
  * Domain Service implementation for Volunteer-related business operations.
  * This class orchestrates interactions between repositories and applies business rules.
@@ -26,6 +27,7 @@ public class VolunteerService implements IVolunteerService {
     private final IVolunteerRepository volunteerRepository;
     private final IOrganizationRepository organizationRepository;
     private final IUnitOfWork unitOfWork;
+    private final MessageSource messageSource;
 
     /**
      * Constructs a new VolunteerService with the given repositories and unit of work.
@@ -35,10 +37,11 @@ public class VolunteerService implements IVolunteerService {
      * @param organizationRepository The repository for Organization entities.
      * @param unitOfWork The unit of work for managing transactions.
      */
-    public VolunteerService(IVolunteerRepository volunteerRepository, IOrganizationRepository organizationRepository, IUnitOfWork unitOfWork) {
+    public VolunteerService(IVolunteerRepository volunteerRepository, IOrganizationRepository organizationRepository, IUnitOfWork unitOfWork, MessageSource messageSource) {
         this.volunteerRepository = volunteerRepository;
         this.organizationRepository = organizationRepository;
         this.unitOfWork = unitOfWork;
+        this.messageSource = messageSource;
     }
 
     /**
@@ -54,17 +57,17 @@ public class VolunteerService implements IVolunteerService {
                                                Long organizationId, String profession) {
 
         if (volunteerRepository.existsByDni(dni)) {
-            System.out.println("Error: Volunteer with DNI " + dni + " already exists.");
+            System.out.println(messageSource.getMessage("volunteer.exists.dni", new Object[]{dni}, LocaleContextHolder.getLocale()));
             return Optional.empty();
         }
         if (volunteerRepository.existsByEmail(email)) {
-            System.out.println("Error: Volunteer with email " + email + " already exists.");
+            System.out.println(messageSource.getMessage("volunteer.exists.email", new Object[]{email}, LocaleContextHolder.getLocale()));
             return Optional.empty();
         }
 
         Optional<Organization> organizationOptional = organizationRepository.findById(organizationId);
         if (organizationOptional.isEmpty()) {
-            System.out.println("Error: Organization with ID " + organizationId + " not found.");
+            System.out.println(messageSource.getMessage("organization.not.found", new Object[]{organizationId}, LocaleContextHolder.getLocale()));
             return Optional.empty();
         }
 
@@ -79,7 +82,7 @@ public class VolunteerService implements IVolunteerService {
         Optional<OrgVolunteer> association = associateVolunteerWithOrganization(savedVolunteer.getId(), organizationId);
 
         if (association.isEmpty()) {
-            System.out.println("Error: Failed to associate volunteer with organization after creation, or association already exists.");
+            System.out.println(messageSource.getMessage("volunteer.organization.association.failed", null, LocaleContextHolder.getLocale()));
             // Considerar rollback si la asociación es obligatoria para el modelo
             return Optional.empty();
         }
@@ -108,11 +111,11 @@ public class VolunteerService implements IVolunteerService {
         Volunteer existingVolunteer = existingVolunteerOptional.get();
 
         if (dni != null && !dni.equals(existingVolunteer.getDni()) && volunteerRepository.existsByDni(dni)) {
-            System.out.println("Error: Cannot update DNI to " + dni + " as it already exists for another volunteer.");
+            System.out.println(messageSource.getMessage("volunteer.update.dni.exists", new Object[]{dni}, LocaleContextHolder.getLocale()));
             return Optional.empty();
         }
         if (email != null && !email.equals(existingVolunteer.getEmail()) && volunteerRepository.existsByEmail(email)) {
-            System.out.println("Error: Cannot update email to " + email + " as it already exists for another volunteer.");
+            System.out.println(messageSource.getMessage("volunteer.update.email.exists", new Object[]{email}, LocaleContextHolder.getLocale()));
             return Optional.empty();
         }
 
@@ -175,7 +178,7 @@ public class VolunteerService implements IVolunteerService {
         Optional<Organization> organizationOptional = organizationRepository.findById(organizationId);
 
         if (volunteerOptional.isEmpty() || organizationOptional.isEmpty()) {
-            System.out.println("Error: Volunteer or Organization not found for association.");
+            System.out.println(messageSource.getMessage("volunteer.association.missing", null, LocaleContextHolder.getLocale()));
             return Optional.empty();
         }
 
@@ -186,7 +189,7 @@ public class VolunteerService implements IVolunteerService {
         boolean associationExists = organization.getOrgVolunteers().stream()
                 .anyMatch(ov -> ov.getId().equals(orgVolunteerId));
         if (associationExists) {
-            System.out.println("Error: Association between Volunteer " + volunteerId + " and Organization " + organizationId + " already exists.");
+            System.out.println(messageSource.getMessage("volunteer.association.exists", new Object[]{volunteerId, organizationId}, LocaleContextHolder.getLocale()));
             return Optional.empty();
         }
 
@@ -212,7 +215,7 @@ public class VolunteerService implements IVolunteerService {
         Optional<Organization> organizationOptional = organizationRepository.findById(organizationId);
 
         if (volunteerOptional.isEmpty() || organizationOptional.isEmpty()) {
-            System.out.println("Error: Volunteer or Organization not found for dissociation.");
+            System.out.println(messageSource.getMessage("volunteer.dissociation.missing", null, LocaleContextHolder.getLocale()));
             return false;
         }
 
@@ -226,7 +229,7 @@ public class VolunteerService implements IVolunteerService {
                 .findFirst();
 
         if (associationToRemove.isEmpty()) {
-            System.out.println("Error: Association between Volunteer " + volunteerId + " and Organization " + organizationId + " does not exist.");
+            System.out.println(messageSource.getMessage("volunteer.dissociation.notFound", new Object[]{volunteerId, organizationId}, LocaleContextHolder.getLocale()));
             return false;
         }
 

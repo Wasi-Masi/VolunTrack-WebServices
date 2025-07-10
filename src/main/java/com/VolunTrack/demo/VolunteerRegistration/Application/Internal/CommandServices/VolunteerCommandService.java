@@ -9,10 +9,11 @@ import com.VolunTrack.demo.Notifications.Domain.Services.INotificationCommandSer
 import com.VolunTrack.demo.Notifications.Domain.Model.Commands.CreateNotificationCommand;
 import com.VolunTrack.demo.Notifications.Domain.Model.Enums.NotificationType;
 import com.VolunTrack.demo.Notifications.Domain.Model.Enums.RecipientType;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
-
+import org.springframework.context.MessageSource;
 /**
  * Command service for managing Volunteer-related operations.
  * This service handles incoming commands, delegates business logic to the domain service,
@@ -23,16 +24,16 @@ public class VolunteerCommandService {
 
     private final IVolunteerService volunteerService;
     private final INotificationCommandService notificationCommandService;
-
+    private final MessageSource messageSource;
     /**
      * Constructs a new VolunteerCommandService.
      *
      * @param volunteerService The domain service for volunteers.
      */
-    public VolunteerCommandService(IVolunteerService volunteerService, INotificationCommandService notificationCommandService) {
+    public VolunteerCommandService(IVolunteerService volunteerService, INotificationCommandService notificationCommandService, MessageSource messageSource) {
         this.volunteerService = volunteerService;
         this.notificationCommandService = notificationCommandService;
-
+        this.messageSource = messageSource;
     }
 
     /**
@@ -42,6 +43,7 @@ public class VolunteerCommandService {
      * @return An Optional containing the created Volunteer if successful, otherwise empty.
      */
     public Optional<Volunteer> handle(CreateVolunteerCommand command) {
+
         Optional<Volunteer> createdVolunteer = volunteerService.createVolunteer(
                 command.firstName(),
                 command.lastName(),
@@ -63,7 +65,8 @@ public class VolunteerCommandService {
                 );
                 notificationCommandService.handle(notificationCommand);
             } catch (Exception e) {
-                System.err.println("Error creating signup notification for volunteer " + volunteer.getId() + ": " + e.getMessage());
+                String errorMessage = messageSource.getMessage("volunteer.signup.notification.error", new Object[]{volunteer.getId(), e.getMessage()}, LocaleContextHolder.getLocale());
+                System.err.println(errorMessage);
             }
         });
 

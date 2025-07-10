@@ -14,32 +14,32 @@ import java.time.LocalDate;
  * This DTO is used to receive input data from REST API calls.
  */
 public record CreateVolunteerResource(
-        @NotBlank(message = "First name is required")
+        @NotBlank(message = "{first.name.required}")
         String firstName,
 
-        @NotBlank(message = "Last name is required")
+        @NotBlank(message = "{last.name.required}")
         String lastName,
 
-        @NotBlank(message = "DNI is required")
-        @Pattern(regexp = "^[0-9]{8}$", message = "DNI must be 8 digits")
+        @NotBlank(message = "{dni.required}")
+        @Pattern(regexp = "^[0-9]{8}$", message = "{dni.invalid}")
         String dni,
 
-        @NotNull(message = "Date of birth is required")
-        @Past(message = "Date of birth must be in the past")
+        @NotNull(message = "{date.of.birth.required}")
+        @Past(message = "{date.of.birth.past}")
         @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
         LocalDate dateOfBirth,
 
-        @NotBlank(message = "Email is required")
-        @Email(message = "Email must be valid")
+        @NotBlank(message = "{email.required}")
+        @Email(message = "{email.invalid}")
         String email,
 
-        @NotBlank(message = "Phone number is required")
+        @NotBlank(message = "{phone.required}")
         String phoneNumber,
 
-        @NotBlank(message = "Address is required")
+        @NotBlank(message = "{address.required}")
         String address,
 
-        @NotNull(message = "Organization ID is required")
+        @NotNull(message = "{organization.id.required}")
         Long organizationId,
 
         String profession

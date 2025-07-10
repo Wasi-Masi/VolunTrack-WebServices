@@ -7,6 +7,8 @@ import com.VolunTrack.demo.Notifications.Domain.Model.Commands.DeleteNotificatio
 import com.VolunTrack.demo.Notifications.Domain.Repositories.INotificationRepository; // Importing the notification repository interface
 import com.VolunTrack.demo.Notifications.Domain.Model.Enums.NotificationType; // Importing the NotificationType enum
 import org.springframework.stereotype.Service; // Spring annotation to indicate that this is a service class
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
 
 import java.util.Optional;
 
@@ -19,14 +21,15 @@ import java.util.Optional;
 public class NotificationCommandService implements INotificationCommandService {
 
     private final INotificationRepository notificationRepository; // Repository to interact with the notification data
-
+    private final MessageSource messageSource;
     /**
      * Constructor to inject the notification repository dependency.
      *
      * @param notificationRepository - The repository to perform operations on notifications in the database.
      */
-    public NotificationCommandService(INotificationRepository notificationRepository) {
+    public NotificationCommandService(INotificationRepository notificationRepository, MessageSource messageSource) {
         this.notificationRepository = notificationRepository;
+        this.messageSource = messageSource;
     }
 
     /**
@@ -40,8 +43,8 @@ public class NotificationCommandService implements INotificationCommandService {
     public Optional<Notification> handle(CreateNotificationCommand command) {
         // Retrieve the default title and message based on the notification type
         NotificationType type = command.type();
-        String title = type.getDefaultTitle();
-        String message = type.getDefaultMessage();
+        String title = messageSource.getMessage("notification." + type.name().toLowerCase() + ".title", null, LocaleContextHolder.getLocale());
+        String message = messageSource.getMessage("notification." + type.name().toLowerCase() + ".message", null, LocaleContextHolder.getLocale());
 
         // Create a new Notification object using the provided details from the command
         Notification newNotification = new Notification(
@@ -66,8 +69,9 @@ public class NotificationCommandService implements INotificationCommandService {
     public void handle(DeleteNotificationCommand command) {
         // Check if the notification exists in the database
         if (!notificationRepository.existsById(command.notificationId())) {
-            // If the notification doesn't exist, throw an exception
-            throw new IllegalArgumentException("Notification with ID " + command.notificationId() + " not found.");
+            throw new IllegalArgumentException(
+                    messageSource.getMessage("notification.notFound", new Object[]{command.notificationId()}, LocaleContextHolder.getLocale())
+            );
         }
 
         // Delete the notification from the database by its ID

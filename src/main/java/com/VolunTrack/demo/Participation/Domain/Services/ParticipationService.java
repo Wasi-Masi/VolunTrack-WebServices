@@ -6,11 +6,13 @@ import com.VolunTrack.demo.Participation.Domain.Model.Aggregates.ParticipationSt
 import com.VolunTrack.demo.Participation.Domain.Repositories.IParticipationRepository;
 import com.VolunTrack.demo.Shared.Domain.Repositories.IUnitOfWork;
 import com.VolunTrack.demo.VolunteerRegistration.Domain.Repositories.IVolunteerRepository;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
+import org.springframework.context.MessageSource;
 
 @Service
 public class ParticipationService implements IParticipationService {
@@ -19,15 +21,18 @@ public class ParticipationService implements IParticipationService {
     private final IVolunteerRepository volunteerRepository;
     private final IActivityRepository activityRepository;
     private final IUnitOfWork unitOfWork;
+    private final MessageSource messageSource;
 
     public ParticipationService(IParticipationRepository participationRepository,
                                 IVolunteerRepository volunteerRepository,
                                 IActivityRepository activityRepository,
-                                IUnitOfWork unitOfWork) {
+                                IUnitOfWork unitOfWork,
+                                MessageSource messageSource) {
         this.participationRepository = participationRepository;
         this.volunteerRepository = volunteerRepository;
         this.activityRepository = activityRepository;
         this.unitOfWork = unitOfWork;
+        this.messageSource = messageSource;
     }
 
     @Override
@@ -36,7 +41,8 @@ public class ParticipationService implements IParticipationService {
         return volunteerRepository.findById(volunteerId).flatMap(volunteer -> {
             return activityRepository.findById(activityId).flatMap(activity -> {
                 if (participationRepository.findByVolunteerAndActivity(volunteer, activity).isPresent()) {
-                    System.out.println("Error: Volunteer " + volunteerId + " is already registered for Activity " + activityId);
+                    String msg = messageSource.getMessage("participation.duplicate", new Object[]{volunteerId, activityId}, LocaleContextHolder.getLocale());
+                    System.out.println(msg);
                     return Optional.empty();
                 }
 

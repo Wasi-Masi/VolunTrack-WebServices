@@ -13,6 +13,8 @@ import com.VolunTrack.demo.Notifications.Domain.Services.INotificationCommandSer
 import com.VolunTrack.demo.Notifications.Domain.Model.Commands.CreateNotificationCommand; // Importing the notification creation command
 import com.VolunTrack.demo.Notifications.Domain.Model.Enums.NotificationType; // Importing the notification type enum
 import com.VolunTrack.demo.Notifications.Domain.Model.Enums.RecipientType; // Importing the recipient type enum
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Service; // Importing Spring's Service annotation
 
 import java.util.ArrayList;
@@ -29,6 +31,7 @@ public class ActivityCommandService implements IActivityService {
 
     private final IActivityRepository activityRepository; // Repository to interact with activity data
     private final INotificationCommandService notificationCommandService; // Service to handle notifications
+    private final MessageSource messageSource;
 
     /**
      * Constructor to inject dependencies for repository and notification service.
@@ -37,9 +40,11 @@ public class ActivityCommandService implements IActivityService {
      * @param notificationCommandService - The service for handling notifications.
      */
     public ActivityCommandService(IActivityRepository activityRepository,
-                                  INotificationCommandService notificationCommandService) {
+                                  INotificationCommandService notificationCommandService,
+                                  MessageSource messageSource) {
         this.activityRepository = activityRepository;
         this.notificationCommandService = notificationCommandService;
+        this.messageSource = messageSource;
     }
 
     /**
@@ -54,7 +59,8 @@ public class ActivityCommandService implements IActivityService {
     public Optional<Activity> handle(CreateActivityCommand command) {
         // Check if an activity with the same title already exists
         if (activityRepository.findByTitulo(command.titulo()).isPresent()) {
-            throw new IllegalArgumentException("Activity with title " + command.titulo() + " already exists.");
+            String msg = messageSource.getMessage("activity.exists.title", new Object[]{command.titulo()}, LocaleContextHolder.getLocale());
+            throw new IllegalArgumentException(msg);
         }
         
         // Create a new activity from the command data
@@ -85,7 +91,8 @@ public class ActivityCommandService implements IActivityService {
             );
             notificationCommandService.handle(notificationCommand);
         } catch (Exception e) {
-            System.err.println("Error creating new-activity notification for organization " + savedActivity.getOrganizacion_id() + ": " + e.getMessage());
+            String msg = messageSource.getMessage("notification.activity.creation.error", new Object[]{savedActivity.getOrganizacion_id(), e.getMessage()}, LocaleContextHolder.getLocale());
+            System.err.println(msg);
         }
 
         return Optional.of(savedActivity);
@@ -134,7 +141,8 @@ public class ActivityCommandService implements IActivityService {
     public void handle(DeleteActivityCommand command) {
         // Check if the activity exists before attempting to delete
         if (!activityRepository.existsById(command.actividadId())) {
-            throw new IllegalArgumentException("Activity with ID " + command.actividadId() + " not found.");
+            String msg = messageSource.getMessage("activity.not.found.by.id", new Object[]{command.actividadId()}, LocaleContextHolder.getLocale());
+            throw new IllegalArgumentException(msg);
         }
         // Delete the activity by its ID
         activityRepository.deleteById(command.actividadId());
@@ -149,7 +157,9 @@ public class ActivityCommandService implements IActivityService {
      */
     @Override
     public List<Activity> handle(GetAllActivitiesQuery query) {
-        throw new UnsupportedOperationException("Query operations should be handled by ActivityQueryService");
+        throw new UnsupportedOperationException(
+                messageSource.getMessage("activity.query.unsupported.all", null, LocaleContextHolder.getLocale())
+        );
     }
 
     /**
@@ -161,6 +171,8 @@ public class ActivityCommandService implements IActivityService {
      */
     @Override
     public Optional<Activity> handle(GetActivityByIdQuery query) {
-        throw new UnsupportedOperationException("Query operations should be handled by ActivityQueryService");
+        throw new UnsupportedOperationException(
+                messageSource.getMessage("activity.query.unsupported.byId", null, LocaleContextHolder.getLocale())
+        );
     }
 }

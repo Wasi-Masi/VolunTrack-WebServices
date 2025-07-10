@@ -6,13 +6,14 @@ import com.VolunTrack.demo.Participation.Domain.Repositories.ICertificateReposit
 import com.VolunTrack.demo.Participation.Domain.Repositories.IParticipationRepository;
 import com.VolunTrack.demo.Shared.Domain.Repositories.IUnitOfWork;
 import com.VolunTrack.demo.VolunteerRegistration.Domain.Repositories.IVolunteerRepository;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
-
+import org.springframework.context.MessageSource;
 /**
  * Domain Service implementation for Certificate-related business operations.
  * This class handles logic for issuing and retrieving certificates.
@@ -24,15 +25,18 @@ public class CertificateService implements ICertificateService {
     private final IParticipationRepository participationRepository;
     private final IVolunteerRepository volunteerRepository;
     private final IUnitOfWork unitOfWork;
+    private final MessageSource messageSource;
 
     public CertificateService(ICertificateRepository certificateRepository,
                               IParticipationRepository participationRepository,
                               IVolunteerRepository volunteerRepository,
-                              IUnitOfWork unitOfWork) {
+                              IUnitOfWork unitOfWork,
+                              MessageSource messageSource) {
         this.certificateRepository = certificateRepository;
         this.participationRepository = participationRepository;
         this.volunteerRepository = volunteerRepository;
         this.unitOfWork = unitOfWork;
+        this.messageSource = messageSource;
     }
 
     @Override
@@ -40,7 +44,8 @@ public class CertificateService implements ICertificateService {
     public Optional<Certificate> issueCertificate(Long participationId, String description) {
         return participationRepository.findById(participationId).flatMap(participation -> {
             if (certificateRepository.findByParticipation(participation).isPresent()) {
-                System.out.println("Error: A certificate already exists for participation ID " + participationId);
+                String msg = messageSource.getMessage("certificate.exists", new Object[]{participationId}, LocaleContextHolder.getLocale());
+                System.out.println(msg);
                 return Optional.empty();
             }
 

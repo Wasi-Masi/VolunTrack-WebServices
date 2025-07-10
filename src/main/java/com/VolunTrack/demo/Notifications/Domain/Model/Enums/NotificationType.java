@@ -1,28 +1,32 @@
 package com.VolunTrack.demo.Notifications.Domain.Model.Enums;
 
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
+
 public enum NotificationType {
-    SIGNUP("Welcome to VolunTrack!", "Your account has been successfully created. You can now join activities."),
-    LOGIN("Session started", "You have successfully logged in."),
-    NEW_ACTIVITY("Activity created", "You have created a new volunteer activity. Share to add volunteers!"),
-    JOINED_ACTIVITY("Registration confirmed", "You have signed up for a new activity. Thank you for your commitment!"),
-    VOLUNTEER_JOINED("New volunteer", "A volunteer has joined one of your activities. Review the details."),
-    CERTIFICATE_READY("Certificate available", "Your participation certificate is now available for download."),
-    REMINDER("Activity reminder", "You have an activity scheduled soon. Don't forget to review the details."),
-    GENERIC("Notification", "You have a new notification in VolunTrack.");
 
-    private final String defaultTitle;
-    private final String defaultMessage;
+    SIGNUP("notification.signup.title", "notification.signup.message"),
+    LOGIN("notification.login.title", "notification.login.message"),
+    NEW_ACTIVITY("notification.new_activity.title", "notification.new_activity.message"),
+    JOINED_ACTIVITY("notification.joined_activity.title", "notification.joined_activity.message"),
+    VOLUNTEER_JOINED("notification.volunteer_joined.title", "notification.volunteer_joined.message"),
+    CERTIFICATE_READY("notification.certificate_ready.title", "notification.certificate_ready.message"),
+    REMINDER("notification.reminder.title", "notification.reminder.message"),
+    GENERIC("notification.generic.title", "notification.generic.message");
 
-    NotificationType(String defaultTitle, String defaultMessage) {
-        this.defaultTitle = defaultTitle;
-        this.defaultMessage = defaultMessage;
+    private final String titleKey;
+    private final String messageKey;
+
+    NotificationType(String titleKey, String messageKey) {
+        this.titleKey = titleKey;
+        this.messageKey = messageKey;
     }
 
-    public String getDefaultTitle() {
-        return defaultTitle;
+    public String getTitle(MessageSource messageSource) {
+        return messageSource.getMessage(titleKey, null, LocaleContextHolder.getLocale());
     }
 
-    public String getDefaultMessage() {
-        return defaultMessage;
+    public String getMessage(MessageSource messageSource) {
+        return messageSource.getMessage(messageKey, null, LocaleContextHolder.getLocale());
     }
 }
