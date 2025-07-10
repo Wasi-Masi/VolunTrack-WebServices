@@ -13,7 +13,6 @@ public record UpdateActivityResource(
         String instrucciones,
         String proposito,
         int cupos,
-        // ELIMINAR ESTA LÍNEA: int inscripcionesActuales, // Ya no es parte del recurso para actualización
         String ubicacion,
         String estado,
         int organizacionId,

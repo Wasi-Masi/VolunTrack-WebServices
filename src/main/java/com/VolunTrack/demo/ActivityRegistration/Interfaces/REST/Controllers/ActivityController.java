@@ -2,6 +2,7 @@ package com.VolunTrack.demo.ActivityRegistration.Interfaces.REST.Controllers;
 
 import com.VolunTrack.demo.ActivityRegistration.Application.Internal.CommandServices.ActivityCommandService;
 import com.VolunTrack.demo.ActivityRegistration.Application.Internal.QueryServices.ActivityQueryService;
+import com.VolunTrack.demo.ActivityRegistration.Domain.Model.Commands.DeleteActivityCommand;
 import com.VolunTrack.demo.ActivityRegistration.Domain.Model.Queries.GetAllActivitiesQuery;
 import com.VolunTrack.demo.ActivityRegistration.Domain.Model.Queries.GetActivityByIdQuery;
 import com.VolunTrack.demo.ActivityRegistration.Interfaces.REST.Resources.CreateActivityResource;
@@ -10,8 +11,12 @@ import com.VolunTrack.demo.ActivityRegistration.Interfaces.REST.Resources.Update
 import com.VolunTrack.demo.ActivityRegistration.Interfaces.REST.Transform.CreateActivityCommandFromResourceAssembler;
 import com.VolunTrack.demo.ActivityRegistration.Interfaces.REST.Transform.ActivityResourceFromEntityAssembler;
 import com.VolunTrack.demo.ActivityRegistration.Interfaces.REST.Transform.UpdateActivityCommandFromResourceAssembler;
+import com.VolunTrack.demo.exception.ResourceNotFoundException;
+import com.VolunTrack.demo.response.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -21,9 +26,9 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * The ActivityController class provides the RESTful API for managing activities in the system.
- * It uses **ActivityCommandService** for command operations (creating, updating, deleting activities)
- * and **ActivityQueryService** for query operations (retrieving activities).
+ * REST controller for Activity-related operations.
+ * This controller handles incoming HTTP requests for activity management,
+ * orchestrates interaction with application services, and returns appropriate HTTP responses.
  */
 @RestController
 @RequestMapping(value = "/api/v1/activities", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -32,93 +37,84 @@ public class ActivityController {
 
     private final ActivityCommandService activityCommandService;
     private final ActivityQueryService activityQueryService;
-    private final ActivityResourceFromEntityAssembler activityResourceFromEntityAssembler; // Se inyecta porque sus métodos son no-estáticos
-    private final UpdateActivityCommandFromResourceAssembler updateActivityCommandFromResourceAssembler; // Se inyecta porque sus métodos son no-estáticos
-    // CreateActivityCommandFromResourceAssembler NO se inyecta porque su método 'toCommandFromResource' es estático.
+    private final ActivityResourceFromEntityAssembler activityResourceFromEntityAssembler;
+    private final UpdateActivityCommandFromResourceAssembler updateActivityCommandFromResourceAssembler;
+    private final MessageSource messageSource;
 
-    /**
-     * Constructor to inject the required command and query services, and the assemblers.
-     */
     public ActivityController(ActivityCommandService activityCommandService,
                               ActivityQueryService activityQueryService,
                               ActivityResourceFromEntityAssembler activityResourceFromEntityAssembler,
-                              UpdateActivityCommandFromResourceAssembler updateActivityCommandFromResourceAssembler) {
+                              UpdateActivityCommandFromResourceAssembler updateActivityCommandFromResourceAssembler,
+                              MessageSource messageSource) {
         this.activityCommandService = activityCommandService;
         this.activityQueryService = activityQueryService;
         this.activityResourceFromEntityAssembler = activityResourceFromEntityAssembler;
         this.updateActivityCommandFromResourceAssembler = updateActivityCommandFromResourceAssembler;
+        this.messageSource = messageSource;
     }
 
-    /**
-     * Handles the request to create a new activity.
-     */
     @Operation(summary = "Create an activity", description = "Creates a new activity in the system.")
     @PostMapping
-    public ResponseEntity<ActivityResource> createActivity(@RequestBody CreateActivityResource resource) {
-        // Llamada estática, ya que el método toCommandFromResource en CreateActivityCommandFromResourceAssembler es estático.
+    public ResponseEntity<ApiResponse<ActivityResource>> createActivity(@RequestBody CreateActivityResource resource) {
         var command = CreateActivityCommandFromResourceAssembler.toCommandFromResource(resource);
         var activity = activityCommandService.handle(command);
         return activity.map(value ->
-                new ResponseEntity<>(this.activityResourceFromEntityAssembler.toResourceFromEntity(value), HttpStatus.CREATED)
-        ).orElseGet(() -> ResponseEntity.badRequest().build());
+                new ResponseEntity<>(
+                        ApiResponse.success(this.activityResourceFromEntityAssembler.toResourceFromEntity(value),
+                                messageSource.getMessage("activity.create.success", null, LocaleContextHolder.getLocale())),
+                        HttpStatus.CREATED
+                )
+        ).orElseGet(() ->
+                ResponseEntity.badRequest().body(ApiResponse.<ActivityResource>error(
+                        messageSource.getMessage("activity.create.error.invalid_data", null, LocaleContextHolder.getLocale()),
+                        null))
+        );
     }
 
-    /**
-     * Handles the request to get all activities.
-     */
     @Operation(summary = "Get all activities", description = "Retrieves a list of all registered activities.")
     @GetMapping
-    public ResponseEntity<List<ActivityResource>> getAllActivities() {
+    public ResponseEntity<ApiResponse<List<ActivityResource>>> getAllActivities() {
         var getAllActivitiesQuery = new GetAllActivitiesQuery();
         var activities = activityQueryService.handle(getAllActivitiesQuery);
         var activityResources = activities.stream()
-                // Se usa la instancia inyectada para llamar a métodos no-estáticos.
                 .map(this.activityResourceFromEntityAssembler::toResourceFromEntity)
                 .collect(Collectors.toList());
-        return ResponseEntity.ok(activityResources);
+        return ResponseEntity.ok(ApiResponse.success(activityResources,
+                messageSource.getMessage("activity.get_all.success", null, LocaleContextHolder.getLocale())));
     }
 
-    /**
-     * Handles the request to get an activity by its ID.
-     */
     @Operation(summary = "Get activity by ID", description = "Retrieves an activity's details by its unique identifier.")
     @GetMapping("/{activityId}")
-    public ResponseEntity<ActivityResource> getActivityById(@PathVariable Long activityId) {
+    public ResponseEntity<ApiResponse<ActivityResource>> getActivityById(@PathVariable Long activityId) {
         var getActivityByIdQuery = new GetActivityByIdQuery(activityId);
         var activity = activityQueryService.handle(getActivityByIdQuery);
         return activity.map(value ->
-                // Se usa la instancia inyectada para llamar a métodos no-estáticos.
-                ResponseEntity.ok(this.activityResourceFromEntityAssembler.toResourceFromEntity(value))
-        ).orElseGet(() -> ResponseEntity.notFound().build());
+                ResponseEntity.ok(ApiResponse.success(this.activityResourceFromEntityAssembler.toResourceFromEntity(value),
+                        messageSource.getMessage("activity.get_by_id.success", null, LocaleContextHolder.getLocale())))
+        ).orElseThrow(() ->
+                new ResourceNotFoundException(messageSource.getMessage("activity.not.found.by.id", new Object[]{activityId}, LocaleContextHolder.getLocale()))
+        );
     }
 
-    /**
-     * Handles the request to update an existing activity.
-     */
     @Operation(summary = "Update an activity", description = "Updates the details of an existing activity.")
     @PutMapping("/{activityId}")
-    public ResponseEntity<ActivityResource> updateActivity(@PathVariable Long activityId, @RequestBody UpdateActivityResource resource) {
-        // Se usa la instancia inyectada para llamar a métodos no-estáticos.
+    public ResponseEntity<ApiResponse<ActivityResource>> updateActivity(@PathVariable Long activityId, @RequestBody UpdateActivityResource resource) {
         var command = this.updateActivityCommandFromResourceAssembler.toCommandFromResource(activityId, resource);
         var updatedActivity = activityCommandService.handle(command);
         return updatedActivity.map(value ->
-                // Se usa la instancia inyectada para llamar a métodos no-estáticos.
-                ResponseEntity.ok(this.activityResourceFromEntityAssembler.toResourceFromEntity(value))
-        ).orElseGet(() -> ResponseEntity.notFound().build());
+                ResponseEntity.ok(ApiResponse.success(this.activityResourceFromEntityAssembler.toResourceFromEntity(value),
+                        messageSource.getMessage("activity.update.success", null, LocaleContextHolder.getLocale())))
+        ).orElseThrow(() ->
+                new ResourceNotFoundException(messageSource.getMessage("activity.not.found.by.id", new Object[]{activityId}, LocaleContextHolder.getLocale()))
+        );
     }
 
-    /**
-     * Handles the request to delete an activity by its ID.
-     */
     @Operation(summary = "Delete an activity", description = "Deletes an activity from the system by its unique identifier.")
     @DeleteMapping("/{activityId}")
-    public ResponseEntity<?> deleteActivity(@PathVariable Long activityId) {
-        try {
-            var command = new com.VolunTrack.demo.ActivityRegistration.Domain.Model.Commands.DeleteActivityCommand(activityId);
-            activityCommandService.handle(command);
-            return ResponseEntity.noContent().build();
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.notFound().build();
-        }
+    public ResponseEntity<ApiResponse<Void>> deleteActivity(@PathVariable Long activityId) {
+        var command = new DeleteActivityCommand(activityId);
+        activityCommandService.handle(command);
+        return ResponseEntity.ok(ApiResponse.noContent(
+                messageSource.getMessage("activity.delete.success", null, LocaleContextHolder.getLocale())));
     }
 }

@@ -5,11 +5,11 @@ import com.VolunTrack.demo.IAM.Application.REST.Resources.SignInResource;
 import com.VolunTrack.demo.IAM.Application.REST.Resources.SignUpResource;
 import com.VolunTrack.demo.IAM.Domain.Model.Aggregates.User;
 import com.VolunTrack.demo.IAM.Infrastructure.Repositories.UserRepository;
-
 import com.VolunTrack.demo.IAM.Infrastructure.Tokens.JWT.JwtService;
 import com.VolunTrack.demo.VolunteerRegistration.Application.Internal.CommandServices.OrganizationCommandService;
 import com.VolunTrack.demo.VolunteerRegistration.Domain.Model.Commands.CreateOrganizationCommand;
 import com.VolunTrack.demo.VolunteerRegistration.Domain.Model.Aggregates.Organization;
+import com.VolunTrack.demo.response.ApiResponse;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -25,8 +25,13 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
 
+/**
+ * REST Controller for user authentication and authorization operations.
+ * Handles user registration (sign-up) and login (sign-in), providing JWT tokens
+ * and ensuring internationalization of all response messages using ApiResponse.
+ */
 @RestController
-@RequestMapping("/api/auth")
+@RequestMapping("/api/v1/auth")
 @Tag(name = "Authorization", description = "Authorization and JWT Management Endpoints")
 public class AuthenticationController {
 
@@ -57,16 +62,15 @@ public class AuthenticationController {
 
     @Operation(summary = "Register a user", description = "Creates a new user in the system.")
     @PostMapping("/sign-up")
-    public ResponseEntity<?> signUp(@Valid @RequestBody SignUpResource signUpResource) {
+    public ResponseEntity<ApiResponse<AuthenticationResponseResource>> signUp(@Valid @RequestBody SignUpResource signUpResource) {
         if (userRepository.existsByUsername(signUpResource.getUsername())) {
             String message = messageSource.getMessage("auth.usernameTaken", null, LocaleContextHolder.getLocale());
-            return new ResponseEntity<>(message, HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(ApiResponse.<AuthenticationResponseResource>error(message, null), HttpStatus.BAD_REQUEST);
         }
         if (userRepository.existsByEmail(signUpResource.getEmail())) {
             String message = messageSource.getMessage("auth.emailTaken", null, LocaleContextHolder.getLocale());
-            return new ResponseEntity<>(message, HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(ApiResponse.<AuthenticationResponseResource>error(message, null), HttpStatus.BAD_REQUEST);
         }
-
 
         User user = new User();
         user.setUsername(signUpResource.getUsername());
@@ -77,7 +81,6 @@ public class AuthenticationController {
         user.setDescription(signUpResource.getDescription());
         user.setProfilePictureUrl(signUpResource.getProfilePictureUrl());
         user.setBannerPictureUrl(signUpResource.getBannerPictureUrl());
-
 
         try {
             CreateOrganizationCommand createOrganizationCommand = new CreateOrganizationCommand(
@@ -106,26 +109,29 @@ public class AuthenticationController {
                 userRepository.delete(user);
             }
             String message = messageSource.getMessage("auth.orgCreationFailed", new Object[]{e.getMessage()}, LocaleContextHolder.getLocale());
-            return new ResponseEntity<>(message, HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(ApiResponse.<AuthenticationResponseResource>error(message, null), HttpStatus.BAD_REQUEST);
         } catch (Exception e) {
             String unexpectedLog = messageSource.getMessage(
                     "auth.orgCreationUnexpectedLog", new Object[]{signUpResource.getUsername(), e.getMessage()}, LocaleContextHolder.getLocale());
             System.err.println(unexpectedLog);
 
             String message = messageSource.getMessage("auth.orgCreationUnexpected", new Object[]{e.getMessage()}, LocaleContextHolder.getLocale());
-            return new ResponseEntity<>(message, HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>(ApiResponse.<AuthenticationResponseResource>error(message, null), HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
         UserDetails userDetails = userDetailsService.loadUserByUsername(user.getUsername());
         String jwt = jwtService.generateToken(userDetails);
 
-        return ResponseEntity.ok(new AuthenticationResponseResource(jwt, user.getOrganizationId()));
+        return ResponseEntity.ok(ApiResponse.success(
+                new AuthenticationResponseResource(jwt, user.getOrganizationId()),
+                messageSource.getMessage("auth.signup.success", null, LocaleContextHolder.getLocale())
+        ));
     }
 
 
     @Operation(summary = "Sign in with an existing user", description = "Validates access tokens for an existing user and gives access to other endpoints.")
     @PostMapping("/sign-in")
-    public ResponseEntity<?> signIn(@Valid @RequestBody SignInResource signInResource) {
+    public ResponseEntity<ApiResponse<AuthenticationResponseResource>> signIn(@Valid @RequestBody SignInResource signInResource) {
         try {
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(signInResource.getUsername(), signInResource.getPassword())
@@ -136,12 +142,15 @@ public class AuthenticationController {
 
             String jwt = jwtService.generateToken(userDetails);
 
-            return ResponseEntity.ok(new AuthenticationResponseResource(jwt, authenticatedUser.getOrganizationId()));
+            return ResponseEntity.ok(ApiResponse.success(
+                    new AuthenticationResponseResource(jwt, authenticatedUser.getOrganizationId()),
+                    messageSource.getMessage("auth.login.success", null, LocaleContextHolder.getLocale())
+            ));
 
         } catch (Exception e) {
             e.printStackTrace();
             String message = messageSource.getMessage("auth.invalidCredentials", null, LocaleContextHolder.getLocale());
-            return new ResponseEntity<>(message, HttpStatus.UNAUTHORIZED);
+            return new ResponseEntity<>(ApiResponse.<AuthenticationResponseResource>error(message, null), HttpStatus.UNAUTHORIZED);
         }
     }
 }

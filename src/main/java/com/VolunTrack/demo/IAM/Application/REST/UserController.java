@@ -6,29 +6,42 @@ import com.VolunTrack.demo.IAM.Domain.Model.Aggregates.User;
 import com.VolunTrack.demo.IAM.Infrastructure.Repositories.UserRepository;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
-import jakarta.validation.Valid;
 
 import java.util.Optional;
 
+import com.VolunTrack.demo.exception.ResourceNotFoundException;
+import com.VolunTrack.demo.response.ApiResponse;
+
+/**
+ * REST Controller for User management.
+ * Provides endpoints for retrieving and updating user profiles,
+ * ensuring internationalization of messages and consistent API responses.
+ */
 @RestController
-@RequestMapping("/api/users")
+@RequestMapping("/api/v1/users")
 @Tag(name = "User", description = "User Management Endpoints")
 public class UserController {
 
     private final UserRepository userRepository;
+    private final MessageSource messageSource;
 
-    public UserController(UserRepository userRepository) {
+    public UserController(UserRepository userRepository, MessageSource messageSource) {
         this.userRepository = userRepository;
+        this.messageSource = messageSource;
     }
 
 
     @Operation(summary = "Get a user", description = "Gets user.")
     @GetMapping("/me")
-    public ResponseEntity<UserResource> getCurrentUserProfile() {
+    public ResponseEntity<ApiResponse<UserResource>> getCurrentUserProfile() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String username = authentication.getName();
 
@@ -46,19 +59,19 @@ public class UserController {
             userResource.setProfilePictureUrl(user.getProfilePictureUrl());
             userResource.setBannerPictureUrl(user.getBannerPictureUrl());
             userResource.setOrganizationId(user.getOrganizationId());
-            // ------------------------------------------
 
-            return ResponseEntity.ok(userResource);
+            return ResponseEntity.ok(ApiResponse.success(userResource,
+                    messageSource.getMessage("user.get.success", null, LocaleContextHolder.getLocale())));
         } else {
-            return ResponseEntity.notFound().build();
+            throw new ResourceNotFoundException(messageSource.getMessage("user.not.found", null, LocaleContextHolder.getLocale()));
         }
     }
 
 
     @Operation(summary = "Update user", description = "Updates user by its id")
     @PutMapping("/{userId}")
-    public ResponseEntity<UserResource> updateUserProfile(@PathVariable Long userId,
-                                                          @Valid @RequestBody UpdateUserResource resource) {
+    public ResponseEntity<ApiResponse<UserResource>> updateUserProfile(@PathVariable Long userId,
+                                                                       @Valid @RequestBody UpdateUserResource resource) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String authenticatedUsername = authentication.getName();
 
@@ -68,10 +81,9 @@ public class UserController {
             User userToUpdate = userOptional.get();
 
             if (!userToUpdate.getUsername().equals(authenticatedUsername)) {
-                return ResponseEntity.status(403).build(); // Prohibido
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ApiResponse.<UserResource>error(
+                        messageSource.getMessage("user.update.forbidden", null, LocaleContextHolder.getLocale()), null));
             }
-
-
 
             userToUpdate.setUsername(resource.getUsername());
             userToUpdate.setEmail(resource.getEmail());
@@ -80,7 +92,6 @@ public class UserController {
             userToUpdate.setDescription(resource.getDescription());
             userToUpdate.setProfilePictureUrl(resource.getProfilePictureUrl());
             userToUpdate.setBannerPictureUrl(resource.getBannerPictureUrl());
-
 
             User updatedUser = userRepository.save(userToUpdate);
 
@@ -94,11 +105,11 @@ public class UserController {
             userResource.setProfilePictureUrl(updatedUser.getProfilePictureUrl());
             userResource.setBannerPictureUrl(updatedUser.getBannerPictureUrl());
             userResource.setOrganizationId(updatedUser.getOrganizationId());
-            // ----------------------------------------------------------------------------------
 
-            return ResponseEntity.ok(userResource);
+            return ResponseEntity.ok(ApiResponse.success(userResource,
+                    messageSource.getMessage("user.update.success", null, LocaleContextHolder.getLocale())));
         } else {
-            return ResponseEntity.notFound().build();
+            throw new ResourceNotFoundException(messageSource.getMessage("user.not.found.by.id", new Object[]{userId}, LocaleContextHolder.getLocale()));
         }
     }
 }
