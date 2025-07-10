@@ -3,6 +3,7 @@ package com.VolunTrack.demo.Participation.Interfaces.REST.Controllers;
 import com.VolunTrack.demo.Participation.Application.Internal.CommandServices.ParticipationCommandService;
 import com.VolunTrack.demo.Participation.Application.Internal.QueryServices.ParticipationQueryService;
 import com.VolunTrack.demo.Participation.Domain.Model.Aggregates.Participation;
+import com.VolunTrack.demo.Participation.Domain.Model.Commands.DeleteParticipationCommand; // <-- ¡IMPORTANTE! Importar el nuevo comando
 import com.VolunTrack.demo.Participation.Domain.Model.Queries.GetParticipationByActivityIdQuery;
 import com.VolunTrack.demo.Participation.Domain.Model.Queries.GetParticipationByUserIdQuery;
 import com.VolunTrack.demo.Participation.Interfaces.REST.Resources.CreateParticipationResource;
@@ -80,5 +81,18 @@ public class ParticipationController {
         return ResponseEntity.ok(resources);
     }
 
-
+    /**
+     * Endpoint to delete a participation record by its ID.
+     * DELETE /api/v1/participations/{participationId}
+     */
+    @Operation(summary = "Delete a participation", description = "Deletes a participation from the system by its ID.")
+    @DeleteMapping("/{participationId}")
+    public ResponseEntity<Void> deleteParticipation(@PathVariable Long participationId) {
+        boolean deleted = participationCommandService.handle(new DeleteParticipationCommand(participationId));
+        if (deleted) {
+            return ResponseEntity.noContent().build(); // HTTP 204 No Content
+        } else {
+            return ResponseEntity.notFound().build(); // HTTP 404 Not Found
+        }
+    }
 }
