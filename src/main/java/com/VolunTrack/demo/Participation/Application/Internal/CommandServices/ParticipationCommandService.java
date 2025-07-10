@@ -2,6 +2,7 @@ package com.VolunTrack.demo.Participation.Application.Internal.CommandServices;
 
 import com.VolunTrack.demo.Participation.Domain.Model.Aggregates.Participation;
 import com.VolunTrack.demo.Participation.Domain.Model.Commands.CreateParticipationCommand;
+import com.VolunTrack.demo.Participation.Domain.Model.Commands.DeleteParticipationCommand; // <-- ¡NUEVO!
 import com.VolunTrack.demo.Participation.Domain.Services.IParticipationService;
 import org.springframework.stereotype.Service;
 
@@ -33,5 +34,16 @@ public class ParticipationCommandService {
                 command.activityId(),
                 command.initialStatus()
         );
+    }
+
+    /**
+     * Handles the DeleteParticipationCommand.
+     * Delegates the deletion of a participation record to the domain service.
+     *
+     * @param command The command containing the ID of the participation to delete.
+     * @return True if the participation was deleted successfully, false otherwise.
+     */
+    public boolean handle(DeleteParticipationCommand command) { // <-- ¡NUEVO MÉTODO!
+        return participationService.deleteParticipation(command.participationId());
     }
 }
