@@ -54,7 +54,7 @@ public class SecurityConfig {
 
                         // 2. Permitir acceso a los endpoints de autenticación y Swagger UI
                         .requestMatchers(
-                                "/api/auth/**", // Tus endpoints de sign-up y sign-in
+                                "/api/v1/auth/**", // Tus endpoints de sign-up y sign-in
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**",
                                 "/swagger-resources/**",
