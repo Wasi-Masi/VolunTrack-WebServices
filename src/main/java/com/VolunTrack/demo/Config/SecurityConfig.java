@@ -63,6 +63,7 @@ public class SecurityConfig {
 
                         // 3. Cualquier otra solicitud requiere autenticación
                         .requestMatchers(HttpMethod.POST, "/api/v1/inscriptions").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/inscriptions").authenticated()
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
